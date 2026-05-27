@@ -16,7 +16,11 @@ func resolve_combat(attacker_rank: GameConstants.Rank, defender_rank: GameConsta
 	if attacker_rank == GameConstants.Rank.FLAG:
 		return CombatResult.GAME_OVER_DEFENDER_WINS
 
-	# 2. TIE CONDITION (Same rank = mutual destruction)
+	# 2. TRAPO vs TRAPO (Mutual destruction regardless of bribe)
+	if attacker_rank == GameConstants.Rank.TRAPO and defender_rank == GameConstants.Rank.TRAPO:
+		return CombatResult.TIE
+	
+	# 3. TIE CONDITION (Same rank = mutual destruction)
 	if attacker_rank == defender_rank:
 		return CombatResult.TIE
 		

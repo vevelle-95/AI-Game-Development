@@ -1,6 +1,8 @@
-extends Node
+extends RefCounted
+class_name GameConstants
 
 enum Team { PLAYER, AI }
+
 enum Rank {
 	TRAPO = -1,
 	FLAG = 0,
@@ -28,15 +30,14 @@ const BOUNTIES = {
 	Rank.TRAPO: 35
 }
 
+
 static func get_vision_range(rank: Rank) -> int:
 	match rank:
 		Rank.GENERAL_3, Rank.GENERAL_4, Rank.GENERAL_5:
-			return 3 
+			return 3
 		Rank.COLONEL, Rank.MAJOR, Rank.LIEUTENANT, Rank.TRAPO:
-			return 2 
+			return 2
 		Rank.SERGEANT, Rank.PRIVATE, Rank.SPY:
-			return 1 
+			return 1
 		_:
 			return 0
-			
-			

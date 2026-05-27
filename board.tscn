@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://ukwiguyxf7mv"]
+
+[ext_resource type="Script" uid="uid://c3plt1j2ijjcw" path="res://board.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://b1jummmf8oroc" path="res://tile.tscn" id="2_psm7c"]
+
+[node name="BoardRoot" type="Control" unique_id=729058877]
+layout_mode = 3
+offset_left = 2.0
+offset_top = 1.0
+offset_right = -3.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+tile_scene = ExtResource("2_psm7c")
+columns = null
+rows = null
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1672279132]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Grid" type="GridContainer" parent="CenterContainer" unique_id=1672279132]
+layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 9

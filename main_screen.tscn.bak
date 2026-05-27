@@ -1,0 +1,139 @@
+[gd_scene format=3 uid="uid://b53qk1cxwrbe2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0hkt3"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[ext_resource path="res://board.tscn" type="PackedScene" id=1]
+
+[node name="Main" type="Node2D" unique_id=204537711]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=2048553049]
+
+[node name="TopBar" type="Panel" parent="UI" unique_id=383859847]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 54.0
+grow_horizontal = 2
+
+[node name="Player Turn" type="Label" parent="UI/TopBar" unique_id=1826374627]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 14.0
+offset_right = 131.0
+offset_bottom = 37.0
+text = "PLAYER TURN"
+
+[node name="Credits" type="Label" parent="UI/TopBar" unique_id=17563800]
+layout_mode = 0
+offset_left = 619.0
+offset_top = 15.0
+offset_right = 705.0
+offset_bottom = 38.0
+text = "0 CREDITS"
+
+[node name="Turn #" type="Label" parent="UI/TopBar" unique_id=28672865]
+layout_mode = 0
+offset_left = 274.0
+offset_top = 16.0
+offset_right = 331.0
+offset_bottom = 39.0
+text = "TURN 1"
+
+[node name="Button" type="Button" parent="UI/TopBar" unique_id=1921813739]
+layout_mode = 0
+offset_left = 909.0
+offset_top = 12.0
+offset_right = 1052.0
+offset_bottom = 43.0
+text = "END TURN"
+
+[node name="RightPanel" type="Panel" parent="UI" unique_id=67974028]
+offset_left = 795.0
+offset_top = 53.0
+offset_right = 1151.0
+offset_bottom = 649.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/RightPanel" unique_id=663974713]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 29.0
+offset_right = 168.0
+offset_bottom = 188.0
+
+[node name="Unit Info" type="Label" parent="UI/RightPanel/VBoxContainer" unique_id=1840397609]
+layout_mode = 2
+text = "UNIT INFO"
+
+[node name="Selected Unit" type="Label" parent="UI/RightPanel/VBoxContainer" unique_id=1527922695]
+layout_mode = 2
+text = "Selected Unit: None"
+
+[node name="Stats" type="Label" parent="UI/RightPanel/VBoxContainer" unique_id=323194217]
+layout_mode = 2
+text = "Rank: \nVision:\nMovement:\n"
+
+[node name="Buttons" type="Panel" parent="UI/RightPanel" unique_id=751848514]
+layout_mode = 0
+offset_left = 102.0
+offset_top = 227.0
+offset_right = 255.0
+offset_bottom = 401.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hkt3")
+
+[node name="Move" type="Button" parent="UI/RightPanel/Buttons" unique_id=1536399157]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 19.0
+offset_right = 116.0
+offset_bottom = 50.0
+text = "MOVE"
+
+[node name="Attack" type="Button" parent="UI/RightPanel/Buttons" unique_id=879440472]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 64.0
+offset_right = 116.0
+offset_bottom = 95.0
+text = "ATTACK"
+
+[node name="Cancel" type="Button" parent="UI/RightPanel/Buttons" unique_id=99577725]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 108.0
+offset_right = 116.0
+offset_bottom = 139.0
+text = "CANCEL"
+
+[node name="BottomBar" type="Panel" parent="UI" unique_id=1314984780]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -97.0
+offset_right = -356.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Game Log" type="Label" parent="UI/BottomBar" unique_id=2034027505]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 13.0
+offset_right = 103.0
+offset_bottom = 36.0
+text = "GAME LOG:"
+
+[node name="Log" type="Label" parent="UI/BottomBar" unique_id=2055390886]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 43.0
+offset_right = 736.0
+offset_bottom = 118.0
+text = "- Your Sergeant defeated Enemy Spy                                    \n- Turn changed "
+
+[node name="Board" parent="." instance=ExtResource( 1 )]
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=434185080]
+offset_top = 54.0
+offset_right = 796.0
+offset_bottom = 551.0
+color = Color(0.44885284, 0.5346703, 0.3432729, 1)

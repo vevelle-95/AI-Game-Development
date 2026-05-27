@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://daeax1fqjvu2i"]
+
+[ext_resource type="Script" uid="uid://c1t3xeqix3fcd" path="res://main_menu.gd" id="1"]
+
+[node name="MainMenu" type="Control" unique_id=611245104]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="MainMenu#Center" type="CenterContainer" parent="." unique_id=1245130693]
+layout_mode = 0
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 1152.0
+offset_bottom = 652.0
+
+[node name="MainMenu_Center#VBox" type="VBoxContainer" parent="MainMenu#Center" unique_id=649267860]
+layout_mode = 2
+alignment = 1
+
+[node name="MainMenu_Center_VBox#Title" type="Label" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=223179561]
+layout_mode = 2
+theme_override_font_sizes/font_size = 39
+text = "GAME OF THE GENERALS"
+horizontal_alignment = 1
+
+[node name="MainMenu_Center_VBox#PlayButton" type="Button" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=628309059]
+layout_mode = 2
+theme_override_font_sizes/font_size = 27
+text = "Play Game"

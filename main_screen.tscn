@@ -1,0 +1,178 @@
+[gd_scene format=3 uid="uid://2m62uq13r0tr"]
+
+[ext_resource type="PackedScene" uid="uid://ukwiguyxf7mv" path="res://board.tscn" id="1_tjn2e"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0hkt3"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[node name="Main" type="Node2D" unique_id=204537711]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=2048553049]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI" unique_id=900000001]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TopBar" type="Panel" parent="UI/VBoxContainer" unique_id=383859847]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player Turn" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=1826374627]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 14.0
+offset_right = 131.0
+offset_bottom = 37.0
+text = "PLAYER TURN"
+
+[node name="Credits" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=17563800]
+layout_mode = 0
+offset_left = 619.0
+offset_top = 15.0
+offset_right = 705.0
+offset_bottom = 38.0
+text = "0 CREDITS"
+
+[node name="Turn #" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=28672865]
+layout_mode = 0
+offset_left = 274.0
+offset_top = 16.0
+offset_right = 331.0
+offset_bottom = 39.0
+text = "TURN 1"
+
+[node name="Button" type="Button" parent="UI/VBoxContainer/TopBar" unique_id=1921813739]
+layout_mode = 0
+offset_left = 909.0
+offset_top = 12.0
+offset_right = 1052.0
+offset_bottom = 43.0
+text = "END TURN"
+
+[node name="MiddleArea" type="HBoxContainer" parent="UI/VBoxContainer" unique_id=900000002]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=900000003]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardRoot" parent="UI/VBoxContainer/MiddleArea/BoardPanel" unique_id=729058877 instance=ExtResource("1_tjn2e")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="RightPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=67974028]
+custom_minimum_size = Vector2(356, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Unit Info" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=1840397609]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 279.0
+offset_bottom = 33.0
+text = "UNIT INFO"
+
+[node name="Selected Unit" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=1527922695]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 43.0
+offset_right = 303.0
+offset_bottom = 66.0
+text = "Selected Unit: None"
+
+[node name="Stats" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=323194217]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 82.0
+offset_right = 319.0
+offset_bottom = 183.0
+text = "Rank: 
+Vision:
+Movement:
+"
+
+[node name="Buttons" type="Panel" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=751848514]
+custom_minimum_size = Vector2(0, 174)
+layout_mode = 0
+offset_top = 195.0
+offset_right = 356.0
+offset_bottom = 369.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hkt3")
+
+[node name="ButtonsCenter" type="CenterContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/Buttons" unique_id=900000012]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ButtonsStack" type="VBoxContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/Buttons/ButtonsCenter" unique_id=900000013]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Move" type="Button" parent="UI/VBoxContainer/MiddleArea/RightPanel/Buttons/ButtonsCenter/ButtonsStack" unique_id=1536399157]
+layout_mode = 2
+text = "MOVE"
+
+[node name="Attack" type="Button" parent="UI/VBoxContainer/MiddleArea/RightPanel/Buttons/ButtonsCenter/ButtonsStack" unique_id=879440472]
+layout_mode = 2
+text = "ATTACK"
+
+[node name="Cancel" type="Button" parent="UI/VBoxContainer/MiddleArea/RightPanel/Buttons/ButtonsCenter/ButtonsStack" unique_id=99577725]
+layout_mode = 2
+text = "CANCEL"
+
+[node name="Space" type="Control" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=993305777]
+anchors_preset = 0
+offset_top = 418.0
+offset_right = 356.0
+offset_bottom = 422.0
+
+[node name="ColorRect" type="ColorRect" parent="UI/VBoxContainer/MiddleArea/RightPanel/Space" unique_id=1865823816]
+layout_mode = 0
+offset_right = 356.0
+offset_bottom = 3.0
+color = Color(0.2901961, 0.2901961, 0.2901961, 1)
+
+[node name="LogPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=900000010]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 0
+offset_top = 409.0
+offset_right = 356.0
+offset_bottom = 569.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hkt3")
+
+[node name="LogVBox" type="VBoxContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel" unique_id=900000011]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 9.0
+offset_top = 27.0
+offset_right = 83.0
+offset_bottom = 27.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="Game Log" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogVBox" unique_id=2034027505]
+layout_mode = 2
+text = "GAME LOG:"
+
+[node name="Log" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogVBox" unique_id=2055390886]
+layout_mode = 2
+text = "- Your Sergeant defeated Enemy Spy                                    
+- Turn changed "

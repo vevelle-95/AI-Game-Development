@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://b1jummmf8oroc"]
+
+[ext_resource type="Script" uid="uid://b35dk0isno2gd" path="res://tile.gd" id="1"]
+
+[node name="Tile" type="Button" unique_id=422610954]
+custom_minimum_size = Vector2(64, 64)
+offset_left = 118.0
+offset_top = 53.0
+offset_right = 157.0
+offset_bottom = 98.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+script = ExtResource("1")

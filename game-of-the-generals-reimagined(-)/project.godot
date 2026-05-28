@@ -16,7 +16,6 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GameConstants="*uid://1tbsq55oltpq"
 Arbiter="*uid://dyovn5ffod8bn"
 
 [dotnet]

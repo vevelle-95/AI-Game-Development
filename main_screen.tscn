@@ -51,7 +51,7 @@ offset_left = 909.0
 offset_top = 12.0
 offset_right = 1052.0
 offset_bottom = 43.0
-text = "END TURN"
+text = "READY"
 
 [node name="MiddleArea" type="HBoxContainer" parent="UI/VBoxContainer" unique_id=900000002]
 layout_mode = 2

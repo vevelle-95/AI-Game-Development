@@ -2,6 +2,7 @@ extends Control
 
 signal log_message(message: String)
 signal selected_tile_unit_info(unit_name: String, rank: String, vision: String, movement: String)
+signal phase_changed(phase_name: String)
 
 @export var tile_scene: PackedScene
 @export var columns := 9
@@ -28,6 +29,7 @@ enum UnitType {
 var selected_tile := Vector2i(-1, -1)
 var tile_map := {}
 var placed_counts := {}
+var setup_locked := false
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -129,12 +131,20 @@ func _on_tile_clicked(pos: Vector2i):
 	selected_tile = pos
 	print("Selected:", pos)
 
+	if setup_locked:
+		emit_selected_tile_info(pos)
+		return
+
 	place_unit(pos) # 🔥 THIS IS THE IMPORTANT ADDITION
 	emit_selected_tile_info(pos)
 
 	highlight_tiles()
 
 func place_unit(pos: Vector2i):
+	if setup_locked:
+		emit_log("Blocked: Setup is locked. Battle phase has started.")
+		return
+
 	if not is_in_deployment_zone(pos):
 		emit_log("Blocked: You can only place units in the bottom %d rows." % DEPLOYMENT_ROWS)
 		return
@@ -205,6 +215,22 @@ func get_total_remaining_units() -> int:
 		var unit: UnitType = UnitType[unit_name]
 		total += get_remaining_for_unit(unit)
 	return total
+
+func is_setup_complete() -> bool:
+	return get_total_remaining_units() == 0
+
+func lock_setup_phase() -> bool:
+	if setup_locked:
+		return true
+
+	if not is_setup_complete():
+		emit_log("Blocked: You must place all units before starting battle phase.")
+		return false
+
+	setup_locked = true
+	emit_log("Setup phase complete. Battle phase started.")
+	emit_signal("phase_changed", "battle")
+	return true
 
 func get_display_name(unit_name: String) -> String:
 	var words = unit_name.to_lower().split("_")

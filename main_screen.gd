@@ -1,6 +1,8 @@
 extends Node2D
 
 @onready var board = $"UI/VBoxContainer/MiddleArea/BoardPanel/BoardRoot"
+@onready var top_phase_label = $"UI/VBoxContainer/TopBar/Player Turn"
+@onready var ready_button = $"UI/VBoxContainer/TopBar/Button"
 @onready var selected_unit_label = $"UI/VBoxContainer/MiddleArea/RightPanel/Selected Unit"
 @onready var unit_picker = $"UI/VBoxContainer/MiddleArea/RightPanel/UnitPicker"
 @onready var stats_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/Stats"
@@ -12,13 +14,13 @@ var log_lines: Array[String] = []
 const UNIT_MATCHUP_DETAILS := {
 	"FLAG": {"strong": "None", "weak": "All enemy units"},
 	"FIVE_STAR": {"strong": "All lower officers", "weak": "Spy"},
-	"FOUR_STAR": {"strong": "Three-Star and lower officers", "weak": "Five-Star, Spy"},
+	"FOUR_STAR": {"strong": "Three-Star Fenerals and lower officers", "weak": "Five-Star, Spy"},
 	"THREE_STAR": {"strong": "Colonel and below", "weak": "Higher generals, Spy"},
 	"COLONEL": {"strong": "Major, Lieutenant, Sergeant, Private", "weak": "Generals, Spy"},
 	"MAJOR": {"strong": "Lieutenant, Sergeant, Private", "weak": "Colonel and above, Spy"},
 	"LIEUTENANT": {"strong": "Sergeant, Private", "weak": "Major and above, Spy"},
 	"SERGEANT": {"strong": "Private", "weak": "Lieutenant and above, Spy"},
-	"SPY": {"strong": "Generals (if Spy attacks first)", "weak": "Private"},
+	"SPY": {"strong": "Five-Star General and lower officers", "weak": "Private"},
 	"PRIVATE": {"strong": "Spy", "weak": "Sergeant and above"}
 }
 
@@ -28,8 +30,10 @@ func _ready():
 	setup_unit_picker()
 	setup_game_log()
 	reset_stats()
+	setup_ready_button()
 	board.log_message.connect(_on_board_log_message)
 	board.selected_tile_unit_info.connect(_on_selected_tile_unit_info)
+	board.phase_changed.connect(_on_board_phase_changed)
 
 func setup_unit_picker():
 	unit_picker.clear()
@@ -69,6 +73,20 @@ func setup_game_log():
 	log_lines.clear()
 	append_log("Game log online.")
 	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+func setup_ready_button():
+	ready_button.text = "READY"
+	ready_button.pressed.connect(_on_ready_button_pressed)
+
+func _on_ready_button_pressed():
+	if board.lock_setup_phase():
+		ready_button.disabled = true
+		unit_picker.disabled = true
+
+func _on_board_phase_changed(phase_name: String):
+	if phase_name == "battle":
+		top_phase_label.text = "BATTLE PHASE"
+		append_log("Battle phase active. Placement is locked.")
 
 func _on_board_log_message(message: String):
 	append_log(message)

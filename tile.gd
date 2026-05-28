@@ -43,4 +43,7 @@ func apply_color():
 	add_theme_stylebox_override("pressed", style)
 
 func set_unit(texture_path: String):
+	if texture_path == "" or texture_path == null:
+		unit_sprite.texture = null
+		return
 	unit_sprite.texture = load(texture_path)

@@ -10,7 +10,7 @@ signal phase_changed(phase_name: String)
 
 @onready var grid = $"CenterContainer/Grid"
 
-var unit_map := {} # Vector2i -> UnitType
+var unit_map := {} # Vector2i -> {"type": UnitType, "uid": int}
 
 enum UnitType {
 	FLAG,
@@ -30,6 +30,9 @@ var selected_tile := Vector2i(-1, -1)
 var tile_map := {}
 var placed_counts := {}
 var setup_locked := false
+var next_unit_uid := 1
+var moved_uids := []
+var armed_unit_pos := Vector2i(-1, -1)
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -131,13 +134,49 @@ func _on_tile_clicked(pos: Vector2i):
 	selected_tile = pos
 	print("Selected:", pos)
 
-	if setup_locked:
+	# Setup phase: place units
+	if not setup_locked:
+		place_unit(pos)
 		emit_selected_tile_info(pos)
+		highlight_tiles()
 		return
 
-	place_unit(pos) # 🔥 THIS IS THE IMPORTANT ADDITION
-	emit_selected_tile_info(pos)
+	# Battle phase: tap-to-move flow
+	# 1) If no armed unit, arm the tapped unit (if any) provided it hasn't moved
+	if armed_unit_pos.x == -1:
+		if unit_map.has(pos):
+			var tapped_entry = unit_map[pos]
+			if moved_uids.has(tapped_entry.uid):
+				emit_log("Unit already moved this turn.")
+				return
+			armed_unit_pos = pos
+			emit_log("Armed %s for movement at (%d, %d)." % [get_display_name(get_unit_name_from_type(tapped_entry.type)), pos.x + 1, pos.y + 1])
+			return
+		else:
+			# nothing to arm
+			return
 
+	# 2) If we have an armed unit, attempt to move to tapped pos
+	if pos == armed_unit_pos:
+		armed_unit_pos = Vector2i(-1, -1)
+		emit_log("Movement cancelled.")
+		return
+
+	var src = armed_unit_pos
+	if not unit_map.has(src):
+		armed_unit_pos = Vector2i(-1, -1)
+		return
+
+	var entry = unit_map[src]
+	var move_range = preload("res://UnitBehavior.gd").new().get_move_range(entry.type)
+	var dist = src.distance_to(pos)
+	if dist > move_range:
+		emit_log("Blocked: Destination out of range.")
+		return
+
+	# perform move
+	_move_unit(src, pos)
+	armed_unit_pos = Vector2i(-1, -1)
 	highlight_tiles()
 
 func place_unit(pos: Vector2i):
@@ -150,20 +189,23 @@ func place_unit(pos: Vector2i):
 		return
 
 	var had_existing_unit := unit_map.has(pos)
-	var existing_unit = unit_map[pos] if had_existing_unit else null
+	var existing_entry = unit_map[pos] if had_existing_unit else null
+	var existing_type = existing_entry.type if existing_entry else null
 
-	if not can_place_selected_unit(existing_unit):
+	if not can_place_selected_unit(existing_type):
 		var unit_name = get_display_name(get_selected_unit_name())
 		emit_log("Blocked: No remaining %s to place." % unit_name)
 		return
 
-	if had_existing_unit and existing_unit != selected_unit:
-		placed_counts[existing_unit] -= 1
+	if had_existing_unit and existing_type != selected_unit:
+		placed_counts[existing_type] -= 1
 
-	if not had_existing_unit or existing_unit != selected_unit:
+	if not had_existing_unit or existing_type != selected_unit:
 		placed_counts[selected_unit] += 1
 
-	unit_map[pos] = selected_unit
+	var entry = {"type": selected_unit, "uid": next_unit_uid}
+	next_unit_uid += 1
+	unit_map[pos] = entry
 
 	var tile = tile_map[pos]
 
@@ -247,11 +289,47 @@ func emit_selected_tile_info(pos: Vector2i):
 		emit_signal("selected_tile_unit_info", "", "", "", "")
 		return
 
-	var unit: UnitType = unit_map[pos]
+	var entry = unit_map[pos]
+	var unit: UnitType = entry.type
 	var unit_name = get_unit_name_from_type(unit)
 	var rank = UNIT_RANK_NAMES.get(unit, "Unknown")
 	var movement = str(UNIT_MOVEMENT.get(unit, 0))
 	emit_signal("selected_tile_unit_info", unit_name, rank, "", movement)
+
+func _clear_tile_at(pos: Vector2i):
+	if tile_map.has(pos):
+		tile_map[pos].set_unit("")
+
+func _move_unit(src: Vector2i, dst: Vector2i):
+	var entry = unit_map[src]
+	# remove from src
+	unit_map.erase(src)
+	_clear_tile_at(src)
+
+	# if destination had unit, decrement its count
+	if unit_map.has(dst):
+		var dest_entry = unit_map[dst]
+		placed_counts[dest_entry.type] -= 1
+
+	# place unit at dst
+	unit_map[dst] = entry
+	var tile_dst = tile_map[dst]
+	tile_dst.set_unit(get_unit_texture(entry.type))
+
+	# mark moved
+	moved_uids.append(entry.uid)
+	emit_log("Moved %s from (%d, %d) to (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1])
+
+func end_turn():
+	# attempt to call global GameManager if present
+	var gm = get_node_or_null("/root/GameManager")
+	if gm != null and gm.has_method("switch_turn"):
+		gm.switch_turn()
+	else:
+		# local fallback: clear moved_uids
+		moved_uids.clear()
+		armed_unit_pos = Vector2i(-1, -1)
+		emit_log("Turn ended (local). Movement reset.")
 
 func get_unit_name_from_type(unit: UnitType) -> String:
 	for unit_name in UNIT_ORDER:

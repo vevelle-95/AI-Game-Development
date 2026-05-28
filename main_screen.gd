@@ -77,11 +77,20 @@ func setup_game_log():
 func setup_ready_button():
 	ready_button.text = "READY"
 	ready_button.pressed.connect(_on_ready_button_pressed)
+	ready_button.disabled = false
+
+func _on_end_turn_pressed():
+	board.end_turn()
+	append_log("End Turn pressed.")
 
 func _on_ready_button_pressed():
 	if board.lock_setup_phase():
-		ready_button.disabled = true
+		# switch button to End Turn mode
+		ready_button.text = "END TURN"
 		unit_picker.disabled = true
+		# reconnect to end-turn handler
+		ready_button.pressed.disconnect(_on_ready_button_pressed)
+		ready_button.pressed.connect(_on_end_turn_pressed)
 
 func _on_board_phase_changed(phase_name: String):
 	if phase_name == "battle":

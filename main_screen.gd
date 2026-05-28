@@ -63,7 +63,7 @@ func update_selected_unit_label(unit_name: String):
 
 func format_unit_name(raw_name: String) -> String:
 	var words = raw_name.to_lower().split("_")
-	for i in words.size():
+	for i in range(words.size()):
 		words[i] = words[i].capitalize()
 	return " ".join(words)
 

@@ -107,8 +107,8 @@ func initialize_counts():
 		placed_counts[UnitType[unit_name]] = 0
 
 func create_board():
-	for y in rows:
-		for x in columns:
+	for y in range(rows):
+		for x in range(columns):
 			var tile = tile_scene.instantiate()
 			grid.add_child(tile)
 
@@ -201,7 +201,7 @@ func _on_tile_clicked(pos: Vector2i):
 		return
 
 	var entry = unit_map[src]
-	var move_range = preload("res://UnitBehavior.gd").new().get_move_range(entry.type)
+	var move_range = preload("res://UnitBehavior.gd").new().get_move_range(unit_type_to_rank(entry.type))
 	var dist = src.distance_to(pos)
 	if dist > move_range:
 		emit_log("Blocked: Destination out of range.")
@@ -310,9 +310,37 @@ func lock_setup_phase() -> bool:
 
 func get_display_name(unit_name: String) -> String:
 	var words = unit_name.to_lower().split("_")
-	for i in words.size():
+	for i in range(words.size()):
 		words[i] = words[i].capitalize()
 	return " ".join(words)
+
+
+func unit_type_to_rank(unit: UnitType) -> GameConstants.Rank:
+	match unit:
+		UnitType.FLAG:
+			return GameConstants.Rank.FLAG
+		UnitType.FIVE_STAR:
+			return GameConstants.Rank.GENERAL_5
+		UnitType.FOUR_STAR:
+			return GameConstants.Rank.GENERAL_4
+		UnitType.THREE_STAR:
+			return GameConstants.Rank.GENERAL_3
+		UnitType.COLONEL:
+			return GameConstants.Rank.COLONEL
+		UnitType.MAJOR:
+			return GameConstants.Rank.MAJOR
+		UnitType.LIEUTENANT:
+			return GameConstants.Rank.LIEUTENANT
+		UnitType.SERGEANT:
+			return GameConstants.Rank.SERGEANT
+		UnitType.SPY:
+			return GameConstants.Rank.SPY
+		UnitType.TRAPO:
+			return GameConstants.Rank.TRAPO
+		UnitType.PRIVATE:
+			return GameConstants.Rank.PRIVATE
+		_:
+			return GameConstants.Rank.FLAG
 
 func emit_log(message: String):
 	print(message)

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://daeax1fqjvu2i"]
 
-[ext_resource type="Script" uid="uid://c1t3xeqix3fcd" path="res://main_menu.gd" id="1"]
+[ext_resource type="Script" uid="uid://c1t3xeqix3fcd" path="res://main_menu.gd" id="1_06t4h"]
 
 [node name="MainMenu" type="Control" unique_id=611245104]
 layout_mode = 3
@@ -9,7 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1")
+script = ExtResource("1_06t4h")
 
 [node name="MainMenu#Center" type="CenterContainer" parent="." unique_id=1245130693]
 layout_mode = 0

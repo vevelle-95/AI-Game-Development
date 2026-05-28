@@ -12,3 +12,13 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 focus_mode = 0
 script = ExtResource("1")
+
+[node name="UnitSprite" type="TextureRect" parent="." unique_id=597359698]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 3
+stretch_mode = 5

@@ -33,6 +33,8 @@ var setup_locked := false
 var next_unit_uid := 1
 var moved_uids := []
 var armed_unit_pos := Vector2i(-1, -1)
+var pickup_entry = null
+var pickup_src_pos := Vector2i(-1, -1)
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -136,6 +138,35 @@ func _on_tile_clicked(pos: Vector2i):
 
 	# Setup phase: place units
 	if not setup_locked:
+		# If we have a pickup in progress, try to place it
+		if pickup_entry != null:
+			# placing a previously picked-up unit
+			if not is_in_deployment_zone(pos):
+				emit_log("Blocked: You can only place units in the bottom %d rows." % DEPLOYMENT_ROWS)
+				return
+			# place the pickup_entry at new pos
+			unit_map[pos] = pickup_entry
+			var tile = tile_map[pos]
+			tile.set_unit(get_unit_texture(pickup_entry.type))
+			emit_log("Moved placed unit %s from (%d, %d) to (%d, %d) during setup." % [get_display_name(get_unit_name_from_type(pickup_entry.type)), pickup_src_pos.x + 1, pickup_src_pos.y + 1, pos.x + 1, pos.y + 1])
+			# clear pickup state
+			pickup_entry = null
+			pickup_src_pos = Vector2i(-1, -1)
+			emit_selected_tile_info(pos)
+			highlight_tiles()
+			return
+		# If clicking a placed unit, pick it up for repositioning
+		if unit_map.has(pos):
+			pickup_entry = unit_map[pos]
+			pickup_src_pos = pos
+			# remove from board but keep counts unchanged (we're repositioning)
+			unit_map.erase(pos)
+			_clear_tile_at(pos)
+			emit_log("Picked up %s from (%d, %d) — click destination to reposition." % [get_display_name(get_unit_name_from_type(pickup_entry.type)), pos.x + 1, pos.y + 1])
+			emit_selected_tile_info(pos)
+			highlight_tiles()
+			return
+		# otherwise regular placement flow
 		place_unit(pos)
 		emit_selected_tile_info(pos)
 		highlight_tiles()
@@ -151,6 +182,7 @@ func _on_tile_clicked(pos: Vector2i):
 				return
 			armed_unit_pos = pos
 			emit_log("Armed %s for movement at (%d, %d)." % [get_display_name(get_unit_name_from_type(tapped_entry.type)), pos.x + 1, pos.y + 1])
+			emit_selected_tile_info(pos)
 			return
 		else:
 			# nothing to arm
@@ -160,6 +192,7 @@ func _on_tile_clicked(pos: Vector2i):
 	if pos == armed_unit_pos:
 		armed_unit_pos = Vector2i(-1, -1)
 		emit_log("Movement cancelled.")
+		emit_selected_tile_info(pos)
 		return
 
 	var src = armed_unit_pos
@@ -177,6 +210,7 @@ func _on_tile_clicked(pos: Vector2i):
 	# perform move
 	_move_unit(src, pos)
 	armed_unit_pos = Vector2i(-1, -1)
+	emit_selected_tile_info(pos)
 	highlight_tiles()
 
 func place_unit(pos: Vector2i):

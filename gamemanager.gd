@@ -1,4 +1,5 @@
 extends Node
+class_name GameManager
 
 enum PlayTurn {
 	PLAYER1,
@@ -12,7 +13,7 @@ func fog_of_war_enabled() -> bool:
 
 var current_turn: PlayTurn = PlayTurn.PLAYER1
 var game_over: bool = false
-var trapo_wallet: int = 0  # TRAPO starts with 0 bribe money
+var trapo_wallet: int = 0 # TRAPO starts with 0 bribe money
 
 func switch_turn() -> void:
 	if current_turn == PlayTurn.PLAYER1:

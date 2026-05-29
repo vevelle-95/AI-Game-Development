@@ -34,6 +34,8 @@ func _ready():
 	board.log_message.connect(_on_board_log_message)
 	board.selected_tile_unit_info.connect(_on_selected_tile_unit_info)
 	board.phase_changed.connect(_on_board_phase_changed)
+	board.turn_changed.connect(_on_board_turn_changed)
+	top_phase_label.text = board.get_current_turn_name()
 
 func setup_unit_picker():
 	unit_picker.clear()
@@ -96,6 +98,10 @@ func _on_board_phase_changed(phase_name: String):
 	if phase_name == "battle":
 		top_phase_label.text = "BATTLE PHASE"
 		append_log("Battle phase active. Placement is locked.")
+
+func _on_board_turn_changed(turn_name: String):
+	if top_phase_label.text != "BATTLE PHASE":
+		top_phase_label.text = turn_name
 
 func _on_board_log_message(message: String):
 	append_log(message)

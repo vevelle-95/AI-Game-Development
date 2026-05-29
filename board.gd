@@ -4,6 +4,7 @@ signal log_message(message: String)
 signal selected_tile_unit_info(unit_name: String, rank: String, vision: String, movement: String)
 signal phase_changed(phase_name: String)
 signal turn_changed(turn_name: String)
+signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: String)
 
 @onready var game_manager: GameManager = GameManager.new()
 @onready var unit_behavior: UnitBehavior = UnitBehavior.new()
@@ -40,6 +41,7 @@ var moved_uids := []
 var armed_unit_pos := Vector2i(-1, -1)
 var pickup_entry = null
 var pickup_src_pos := Vector2i(-1, -1)
+var turn_number := 1
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -126,6 +128,7 @@ func _ready():
 	create_board()
 	setup_ai_enemy()
 	update_fog_of_war()
+	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	emit_signal("turn_changed", get_current_turn_name())
 	emit_log("Setup phase started. Place your units on the bottom %d rows." % DEPLOYMENT_ROWS)
 
@@ -381,34 +384,52 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		var defender_entry = unit_map[dst]
 		var defender_rank = unit_type_to_rank(defender_entry.type)
 		var combat_result = arbiter.resolve_combat(attacker_rank, defender_rank)
+		var bounty_awarded := 0
+		var bounty_unit_name := ""
 
-		match combat_result:
-			Arbiter.CombatResult.ATTACKER_WINS, Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-				unit_map.erase(src)
-				_clear_tile_at(src)
-				unit_map.erase(dst)
-				unit_map[dst] = entry
-				tile_map[dst].set_unit(get_unit_texture_for_entry(entry))
-				moved_uids.append(entry.uid)
-				emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
-				if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-					game_manager.game_over = true
-					emit_log("Game over: attacker captured the flag.")
-			Arbiter.CombatResult.DEFENDER_WINS, Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
-				unit_map.erase(src)
-				_clear_tile_at(src)
-				moved_uids.append(entry.uid)
-				emit_log("%s lost against %s at (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), get_display_name(get_unit_name_from_type(defender_entry.type)), dst.x + 1, dst.y + 1])
-				if combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
-					game_manager.game_over = true
-					emit_log("Game over: defender kept the flag.")
-			Arbiter.CombatResult.TIE:
-				unit_map.erase(src)
-				_clear_tile_at(src)
-				unit_map.erase(dst)
-				_clear_tile_at(dst)
-				moved_uids.append(entry.uid)
-				emit_log("%s and %s eliminated each other at (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), get_display_name(get_unit_name_from_type(defender_entry.type)), dst.x + 1, dst.y + 1])
+		if combat_result == Arbiter.CombatResult.ATTACKER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
+			bounty_awarded = _maybe_award_bounty(defender_entry, entry)
+			if bounty_awarded > 0:
+				bounty_unit_name = get_unit_name_from_type(defender_entry.type)
+			unit_map.erase(src)
+			_clear_tile_at(src)
+			unit_map.erase(dst)
+			unit_map[dst] = entry
+			tile_map[dst].set_unit(get_unit_texture_for_entry(entry))
+			moved_uids.append(entry.uid)
+			emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
+			if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
+				game_manager.game_over = true
+				emit_log("Game over: attacker captured the flag.")
+		elif combat_result == Arbiter.CombatResult.DEFENDER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
+			bounty_awarded = _maybe_award_bounty(entry, defender_entry)
+			if bounty_awarded > 0:
+				bounty_unit_name = get_unit_name_from_type(entry.type)
+			unit_map.erase(src)
+			_clear_tile_at(src)
+			moved_uids.append(entry.uid)
+			emit_log("%s lost against %s at (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), get_display_name(get_unit_name_from_type(defender_entry.type)), dst.x + 1, dst.y + 1])
+			if combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
+				game_manager.game_over = true
+				emit_log("Game over: defender kept the flag.")
+		elif combat_result == Arbiter.CombatResult.TIE:
+			var attacker_bounty: int = _maybe_award_bounty(defender_entry, entry)
+			if attacker_bounty > 0:
+				bounty_awarded = attacker_bounty
+				bounty_unit_name = get_unit_name_from_type(defender_entry.type)
+			else:
+				var defender_bounty: int = _maybe_award_bounty(entry, defender_entry)
+				if defender_bounty > 0:
+					bounty_awarded = defender_bounty
+					bounty_unit_name = get_unit_name_from_type(entry.type)
+			unit_map.erase(src)
+			_clear_tile_at(src)
+			unit_map.erase(dst)
+			_clear_tile_at(dst)
+			moved_uids.append(entry.uid)
+			emit_log("%s and %s eliminated each other at (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), get_display_name(get_unit_name_from_type(defender_entry.type)), dst.x + 1, dst.y + 1])
+		if bounty_awarded > 0:
+			emit_signal("bounty_changed", game_manager.trapo_wallet, bounty_awarded, bounty_unit_name)
 		return
 
 	# remove from src
@@ -425,8 +446,39 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 	emit_log("Moved %s from (%d, %d) to (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1])
 	update_fog_of_war()
 
+func _maybe_award_bounty(killed_entry: Dictionary, killer_entry: Dictionary) -> int:
+	print("DEBUG: _maybe_award_bounty called -- killed_entry=", killed_entry, " killer_entry=", killer_entry)
+	if typeof(killed_entry) != TYPE_DICTIONARY or typeof(killer_entry) != TYPE_DICTIONARY:
+		print("DEBUG: _maybe_award_bounty returning 0: invalid types")
+		return 0
+	var killed_owner = get_entry_owner(killed_entry)
+	var killer_owner = get_entry_owner(killer_entry)
+	print("DEBUG: killed_owner=", killed_owner, " killer_owner=", killer_owner)
+	if killed_owner != GameConstants.Team.AI:
+		print("DEBUG: _maybe_award_bounty returning 0: killed is not AI")
+		return 0
+	if killer_owner != GameConstants.Team.PLAYER:
+		print("DEBUG: _maybe_award_bounty returning 0: killer is not PLAYER")
+		return 0
+
+	var killed_rank: GameConstants.Rank = unit_type_to_rank(killed_entry.type)
+	print("DEBUG: killed_rank=", killed_rank)
+	var bounty: int = 0
+	if GameConstants.BOUNTIES.has(killed_rank):
+		bounty = GameConstants.BOUNTIES[killed_rank]
+	else:
+		print("DEBUG: no bounty defined for rank=", killed_rank)
+	if bounty > 0:
+		print("DEBUG: awarding bounty - killed_rank=", killed_rank, " bounty=", bounty, " wallet_before=", game_manager.trapo_wallet)
+		game_manager.add_kill_bounty(killed_rank)
+		print("DEBUG: wallet_after=", game_manager.trapo_wallet)
+		return bounty
+	print("DEBUG: _maybe_award_bounty returning 0: bounty is 0 for killed_rank=", killed_rank)
+	return 0
+
 func end_turn():
 	game_manager.switch_turn()
+	turn_number += 1
 	moved_uids.clear()
 	armed_unit_pos = Vector2i(-1, -1)
 	emit_signal("turn_changed", get_current_turn_name())
@@ -466,6 +518,9 @@ func unit_type_to_rank(unit: UnitType) -> GameConstants.Rank:
 		UnitType.PRIVATE:
 			return GameConstants.Rank.PRIVATE
 	return GameConstants.Rank.FLAG
+
+func get_turn_number() -> int:
+	return turn_number
 
 func setup_ai_enemy():
 	for unit_data in AI_TEST_LAYOUT:

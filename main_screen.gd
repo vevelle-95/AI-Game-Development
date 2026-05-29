@@ -2,6 +2,8 @@ extends Node2D
 
 @onready var board = $"UI/VBoxContainer/MiddleArea/BoardPanel/BoardRoot"
 @onready var top_phase_label = $"UI/VBoxContainer/TopBar/Player Turn"
+@onready var bounty_label = $"UI/VBoxContainer/TopBar/Credits"
+@onready var turn_label = $"UI/VBoxContainer/TopBar/Turn #"
 @onready var ready_button = $"UI/VBoxContainer/TopBar/Button"
 @onready var selected_unit_label = $"UI/VBoxContainer/MiddleArea/RightPanel/Selected Unit"
 @onready var unit_picker = $"UI/VBoxContainer/MiddleArea/RightPanel/UnitPicker"
@@ -35,7 +37,10 @@ func _ready():
 	board.selected_tile_unit_info.connect(_on_selected_tile_unit_info)
 	board.phase_changed.connect(_on_board_phase_changed)
 	board.turn_changed.connect(_on_board_turn_changed)
+	board.bounty_changed.connect(_on_board_bounty_changed)
 	top_phase_label.text = board.get_current_turn_name()
+	_update_bounty_label(0, 0, "")
+	turn_label.text = "TURN %d" % board.get_turn_number()
 
 func setup_unit_picker():
 	unit_picker.clear()
@@ -102,6 +107,16 @@ func _on_board_phase_changed(phase_name: String):
 func _on_board_turn_changed(turn_name: String):
 	if top_phase_label.text != "BATTLE PHASE":
 		top_phase_label.text = turn_name
+	turn_label.text = "TURN %d" % board.get_turn_number()
+
+func _on_board_bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: String):
+	_update_bounty_label(total_bounty, last_bounty, killed_unit_name)
+
+func _update_bounty_label(total_bounty: int, last_bounty: int, killed_unit_name: String):
+	if last_bounty > 0 and killed_unit_name != "":
+		bounty_label.text = "CREDITS: %d  (+%d %s)" % [total_bounty, last_bounty, format_unit_name(killed_unit_name)]
+	else:
+		bounty_label.text = "CREDITS: %d" % total_bounty
 
 func _on_board_log_message(message: String):
 	append_log(message)

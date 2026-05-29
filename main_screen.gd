@@ -38,9 +38,9 @@ func _ready():
 	board.phase_changed.connect(_on_board_phase_changed)
 	board.turn_changed.connect(_on_board_turn_changed)
 	board.bounty_changed.connect(_on_board_bounty_changed)
-	top_phase_label.text = board.get_current_turn_name()
+	top_phase_label.text = "GAME OF THE GENERALS"
 	_update_bounty_label(0, 0, "")
-	turn_label.text = "TURN %d" % board.get_turn_number()
+	turn_label.text = board.get_current_turn_name()
 
 
 func setup_unit_picker():
@@ -106,9 +106,7 @@ func _on_board_phase_changed(phase_name: String):
 		append_log("Battle phase active. Placement is locked.")
 
 func _on_board_turn_changed(turn_name: String):
-	if top_phase_label.text != "BATTLE PHASE":
-		top_phase_label.text = turn_name
-	turn_label.text = "TURN %d" % board.get_turn_number()
+	turn_label.text = turn_name
 
 func _on_board_bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: String):
 	_update_bounty_label(total_bounty, last_bounty, killed_unit_name)

@@ -42,6 +42,7 @@ func _ready():
 	_update_bounty_label(0, 0, "")
 	turn_label.text = "TURN %d" % board.get_turn_number()
 
+
 func setup_unit_picker():
 	unit_picker.clear()
 

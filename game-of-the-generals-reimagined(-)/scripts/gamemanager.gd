@@ -30,6 +30,9 @@ func check_bribe_success(enemy_rank: GameConstants.Rank) -> bool:
 	var enemy_bribe = GameConstants.BOUNTIES.get(enemy_rank, 0)
 	return trapo_wallet >= enemy_bribe
 
+if check_bribe_success(enemy_rank) = false:
+    #TRAPO is now reveled to the enemy for the next 2 turns
+    reveal_trapo_for_turns()
 
 func deduct_bribe_cost(enemy_rank: GameConstants.Rank) -> void:
 	#if the TRAPO successfully bribes an enemy piece

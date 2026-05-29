@@ -1,7 +1,7 @@
 extends RefCounted
 class_name GameConstants
 
-enum Team { PLAYER, AI }
+enum Team {PLAYER, AI}
 
 enum Rank {
 	TRAPO = -1,
@@ -14,7 +14,7 @@ enum Rank {
 	COLONEL = 6,
 	GENERAL_3 = 7,
 	GENERAL_4 = 8,
-	GENERAL_5 = 9 
+	GENERAL_5 = 9
 }
 
 const BOUNTIES = {
@@ -40,4 +40,3 @@ static func get_vision_range(rank: Rank) -> int:
 			return 1
 		_:
 			return 0
-			

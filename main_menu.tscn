@@ -1,12 +1,6 @@
 [gd_scene format=3 uid="uid://daeax1fqjvu2i"]
 
-[ext_resource type="Script" uid="uid://c1t3xeqix3fcd" path="res://main_menu.gd" id="1"]
-[ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="2_7vrkn"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fu7sn"]
-bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
-expand_margin_top = 2.0
-expand_margin_bottom = 2.0
+[ext_resource type="Script" uid="uid://c1t3xeqix3fcd" path="res://main_menu.gd" id="1_06t4h"]
 
 [node name="MainMenu" type="Control" unique_id=611245104]
 layout_mode = 3
@@ -15,13 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1")
-
-[node name="ColorRect" type="ColorRect" parent="." unique_id=190659846]
-layout_mode = 0
-offset_right = 1152.0
-offset_bottom = 649.0
-color = Color(0.30588236, 0.32156864, 0.21960784, 1)
+script = ExtResource("1_06t4h")
 
 [node name="MainMenu#Center" type="CenterContainer" parent="." unique_id=1245130693]
 layout_mode = 0
@@ -36,14 +24,11 @@ alignment = 1
 
 [node name="MainMenu_Center_VBox#Title" type="Label" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=223179561]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_7vrkn")
-theme_override_font_sizes/font_size = 61
+theme_override_font_sizes/font_size = 39
 text = "GAME OF THE GENERALS"
 horizontal_alignment = 1
 
 [node name="MainMenu_Center_VBox#PlayButton" type="Button" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=628309059]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_7vrkn")
-theme_override_font_sizes/font_size = 35
-theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
+theme_override_font_sizes/font_size = 27
 text = "Play Game"

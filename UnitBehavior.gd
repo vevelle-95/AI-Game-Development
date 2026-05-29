@@ -1,5 +1,4 @@
 extends Node
-class_name UnitBehavior
 
 # MOVEMENT RULES
 
@@ -54,7 +53,7 @@ func spy_can_defeat(attacker_rank = GameConstants.Rank, defender_rank = GameCons
 	return false
 
 func private_can_defeat_spy(attacker_rank = GameConstants.Rank, defender_rank = GameConstants.Rank) -> bool:
-	return (
+	return(
 		attacker_rank == GameConstants.Rank.PRIVATE and defender_rank == GameConstants.Rank.SPY
 	)
 
@@ -82,6 +81,7 @@ func can_corrupt(
 	target_position: Vector2i,
 	target_rank: GameConstants.Rank
 ) -> bool:
+
 	if target_rank == GameConstants.Rank.FLAG:
 		return false
 

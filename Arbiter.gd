@@ -1,15 +1,15 @@
 extends Node
-class_name Arbiter
 
 enum CombatResult {
-	ATTACKER_WINS,
-	DEFENDER_WINS,
-	TIE,
-	GAME_OVER_ATTACKER_WINS,
-	GAME_OVER_DEFENDER_WINS
+	ATTACKER_WINS, 
+	DEFENDER_WINS, 
+	TIE, 
+	GAME_OVER_ATTACKER_WINS, 
+	GAME_OVER_DEFENDER_WINS 
 }
 
 func resolve_combat(attacker_rank: GameConstants.Rank, defender_rank: GameConstants.Rank) -> CombatResult:
+	
 	# 1. FLAG CONDITIONS (Instant Game Over)
 	if defender_rank == GameConstants.Rank.FLAG:
 		return CombatResult.GAME_OVER_ATTACKER_WINS

@@ -2,8 +2,6 @@ extends Node2D
 
 @onready var board = $"UI/VBoxContainer/MiddleArea/BoardPanel/BoardRoot"
 @onready var top_phase_label = $"UI/VBoxContainer/TopBar/Player Turn"
-@onready var bounty_label = $"UI/VBoxContainer/TopBar/Credits"
-@onready var turn_label = $"UI/VBoxContainer/TopBar/Turn #"
 @onready var ready_button = $"UI/VBoxContainer/TopBar/Button"
 @onready var selected_unit_label = $"UI/VBoxContainer/MiddleArea/RightPanel/Selected Unit"
 @onready var unit_picker = $"UI/VBoxContainer/MiddleArea/RightPanel/UnitPicker"
@@ -71,7 +69,7 @@ func update_selected_unit_label(unit_name: String):
 
 func format_unit_name(raw_name: String) -> String:
 	var words = raw_name.to_lower().split("_")
-	for i in words.size():
+	for i in range(words.size()):
 		words[i] = words[i].capitalize()
 	return " ".join(words)
 

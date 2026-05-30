@@ -152,7 +152,10 @@ func append_log(message: String):
 		log_lines = log_lines.slice(log_lines.size() - MAX_LOG_LINES, log_lines.size())
 
 	log_label.text = "\n".join(log_lines)
-	log_label.scroll_to_line(max(log_label.get_line_count() - 1, 0))
+	# FIX: get_line_count() returns a stale value immediately after setting text
+	# because RichTextLabel defers its layout recompute to the next frame.
+	# scroll_following = true (set in setup_game_log) handles auto-scrolling correctly,
+	# so the manual scroll_to_line call is removed — it was the cause of the one-move delay.
 
 func _on_selected_tile_unit_info(unit_name: String, rank: String, vision: String, movement: String):
 	if unit_name == "":

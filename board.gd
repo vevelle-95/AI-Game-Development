@@ -18,6 +18,7 @@ signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: Str
 
 var unit_map := {} # Vector2i -> {"type": UnitType, "uid": int}
 
+
 enum UnitType {
 	FLAG,
 	FIVE_STAR,
@@ -45,6 +46,8 @@ var pickup_entry = null
 var pickup_src_pos := Vector2i(-1, -1)
 var turn_number := 1
 var bribe_mode := false
+var has_moved_this_turn := false  # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
+
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -224,6 +227,10 @@ func _on_tile_clicked(pos: Vector2i):
 			if get_entry_owner(tapped_entry) != GameConstants.Team.PLAYER:
 				emit_selected_tile_info(pos)
 				return
+			# ONE MOVE PER TURN: block arming if the player already moved this turn
+			if has_moved_this_turn:
+				emit_log("You already moved a piece this turn. Press 'End Turn'.")
+				return
 			if moved_uids.has(tapped_entry.uid):
 				emit_log("Unit already moved this turn.")
 				return
@@ -236,9 +243,9 @@ func _on_tile_clicked(pos: Vector2i):
 			return
 
 	# 2) If we have an armed unit, attempt to move to tapped pos
+	# TOUCH-MOVE RULE: clicking the armed unit again does NOT cancel — the player must move it
 	if pos == armed_unit_pos:
-		armed_unit_pos = Vector2i(-1, -1)
-		emit_log("Movement cancelled.")
+		emit_log("Touch-move rule: you must move this piece to a valid square.")
 		emit_selected_tile_info(pos)
 		return
 
@@ -254,8 +261,9 @@ func _on_tile_clicked(pos: Vector2i):
 		emit_log("Blocked: Destination out of range.")
 		return
 
-	# perform move
+	# perform move — set has_moved_this_turn AFTER a successful move
 	_move_unit(src, pos)
+	has_moved_this_turn = true  # ONE MOVE PER TURN: lock further movement until end_turn()
 	armed_unit_pos = Vector2i(-1, -1)
 	emit_selected_tile_info(pos)
 	highlight_tiles()
@@ -572,6 +580,7 @@ func end_turn():
 	game_manager.switch_turn()
 	turn_number += 1
 	moved_uids.clear()
+	has_moved_this_turn = false  # ONE MOVE PER TURN: reset so the player can move again next turn
 	armed_unit_pos = Vector2i(-1, -1)
 	bribe_mode = false
 	emit_signal("turn_changed", get_current_turn_name())

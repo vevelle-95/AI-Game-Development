@@ -11,6 +11,7 @@ var game_over: bool = false
 var trapo_wallet: int = 0 # TRAPO starts with 0 bribe money
 
 # --- NEW VARIABLES ADDED FOR TIMER TRACKING ---
+var timer_active: bool = false
 var p1_time_remaining: float = float(timer_for_game())
 var ai_time_remaining: float = float(timer_for_game())
 
@@ -25,7 +26,7 @@ func randomize() -> void:
 
 # --- NEW PROCESSING LOOP TO TICK DOWN TIMERS ---
 func _process(delta: float) -> void:
-	if game_over:
+	if game_over or not timer_active:
 		return
 		
 	# Reduce the current player's time pool by the time passed this frame

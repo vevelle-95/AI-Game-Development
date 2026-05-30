@@ -353,6 +353,8 @@ func lock_setup_phase() -> bool:
 		return false
 
 	setup_locked = true
+	if game_manager:
+		game_manager.timer_active = true
 	emit_log("Setup phase complete. Battle phase started.")
 	emit_signal("phase_changed", "battle")
 	return true

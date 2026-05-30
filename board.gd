@@ -48,6 +48,12 @@ var turn_number := 1
 var bribe_mode := false
 var has_moved_this_turn := false  # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
 
+# BRIBE SYSTEM: uid -> { "moves_remaining": int, "original_owner": GameConstants.Team }
+# While a unit is in this dict, it is temporarily controlled by the bribing team.
+# Each move it makes decrements moves_remaining. When it hits 0, ownership reverts.
+const BRIBE_MOVE_DURATION := 3
+var bribed_units := {}
+
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -110,80 +116,19 @@ const UNIT_MOVEMENT := {
 	UnitType.PRIVATE: 1
 }
 
-var ai_start_positions1 = [
-	# --- Row 0 (Backline Formations) ---
-	{"pos": Vector2i(0, 0), "type": UnitType.SPY},
-	{"pos": Vector2i(1, 0), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(2, 0), "type": UnitType.SERGEANT},
+const AI_TEST_LAYOUT := [
+	{"pos": Vector2i(0, 0), "type": UnitType.FLAG},
+	{"pos": Vector2i(1, 0), "type": UnitType.FIVE_STAR},
+	{"pos": Vector2i(2, 0), "type": UnitType.FOUR_STAR},
 	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
-	{"pos": Vector2i(4, 0), "type": UnitType.FIVE_STAR},
-	{"pos": Vector2i(5, 0), "type": UnitType.FLAG},
-	{"pos": Vector2i(6, 0), "type": UnitType.FOUR_STAR},
-	{"pos": Vector2i(7, 0), "type": UnitType.COLONEL},
-	{"pos": Vector2i(8, 0), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(9, 0), "type": UnitType.SPY},
-
-	# --- Row 1 (Midline Formations) ---
+	{"pos": Vector2i(4, 0), "type": UnitType.COLONEL},
+	{"pos": Vector2i(5, 0), "type": UnitType.MAJOR},
+	{"pos": Vector2i(6, 0), "type": UnitType.LIEUTENANT},
+	{"pos": Vector2i(7, 0), "type": UnitType.SERGEANT},
+	{"pos": Vector2i(8, 0), "type": UnitType.SPY},
 	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
-	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(2, 1), "type": UnitType.MAJOR},
-	{"pos": Vector2i(3, 1), "type": UnitType.LIEUTENANT},
-	{"pos": Vector2i(4, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(5, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(6, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(7, 1), "type": UnitType.PRIVATE}
+	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE}
 ]
-
-var ai_start_positions2 = [
-	{"pos": Vector2i(0, 0), "type": UnitType.SPY},
-	{"pos": Vector2i(1, 0), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(2, 0), "type": UnitType.SERGEANT},
-	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
-	{"pos": Vector2i(5, 0), "type": UnitType.FLAG},
-	{"pos": Vector2i(6, 0), "type": UnitType.FOUR_STAR},
-	{"pos": Vector2i(7, 0), "type": UnitType.COLONEL},
-	{"pos": Vector2i(8, 0), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(9, 0), "type": UnitType.SPY},
-
-	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
-	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(2, 1), "type": UnitType.MAJOR},
-	{"pos": Vector2i(3, 1), "type": UnitType.LIEUTENANT},
-	{"pos": Vector2i(4, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(6, 1), "type": UnitType.PRIVATE},
-
-	# row 2: (Fodder Line with hidden high-value targets)
-	{"pos": Vector2i(3, 2), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(4, 2), "type": UnitType.FIVE_STAR},
-	{"pos": Vector2i(5, 2), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(6, 2), "type": UnitType.SPY}
-]
-
-var ai_start_positions3 = [
-	{"pos": Vector2i(0, 0), "type": UnitType.SPY},
-	{"pos": Vector2i(1, 0), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(2, 0), "type": UnitType.SERGEANT},
-	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
-	{"pos": Vector2i(4, 0), "type": UnitType.FIVE_STAR},
-	{"pos": Vector2i(5, 0), "type": UnitType.FLAG},
-	{"pos": Vector2i(6, 0), "type": UnitType.FOUR_STAR},
-	{"pos": Vector2i(7, 0), "type": UnitType.COLONEL},
-	{"pos": Vector2i(9, 0), "type": UnitType.SPY},
-
-	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
-	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(2, 1), "type": UnitType.MAJOR},
-	{"pos": Vector2i(3, 1), "type": UnitType.LIEUTENANT},
-	{"pos": Vector2i(4, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(5, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(6, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(7, 1), "type": UnitType.PRIVATE},
-	{"pos": Vector2i(8, 1), "type": UnitType.PRIVATE}
-]
-
-func randomize_ai_positions() -> Array:
-	var presets = [ai_start_positions1, ai_start_positions2, ai_start_positions3]
-	return presets.pick_random()
 
 const TURN_NAMES := {
 	GameManager.PlayTurn.PLAYER1: "PLAYER TURN",
@@ -281,10 +226,16 @@ func _on_tile_clicked(pos: Vector2i):
 		return
 
 	# Battle phase: tap-to-move flow
+	# Hard lock — player cannot move any pieces during the AI's turn.
+	if game_manager.current_turn == GameManager.PlayTurn.AI:
+		emit_log("Blocked: It is the AI's turn. Wait for the AI to finish.")
+		return
+
 	# 1) If no armed unit, arm the tapped unit (if any) provided it hasn't moved
 	if armed_unit_pos.x == -1:
 		if unit_map.has(pos):
 			var tapped_entry = unit_map[pos]
+			# Allow arming if the unit is owned by PLAYER, OR if it is a temporarily bribed unit
 			if get_entry_owner(tapped_entry) != GameConstants.Team.PLAYER:
 				emit_selected_tile_info(pos)
 				return
@@ -296,7 +247,11 @@ func _on_tile_clicked(pos: Vector2i):
 				emit_log("Unit already moved this turn.")
 				return
 			armed_unit_pos = pos
-			emit_log("Armed %s for movement at (%d, %d)." % [get_display_name(get_unit_name_from_type(tapped_entry.type)), pos.x + 1, pos.y + 1])
+			emit_log("Armed %s for movement at (%d, %d).%s" % [
+				get_display_name(get_unit_name_from_type(tapped_entry.type)),
+				pos.x + 1, pos.y + 1,
+				_bribe_moves_label(tapped_entry.uid)
+			])
 			emit_selected_tile_info(pos)
 			return
 		else:
@@ -478,19 +433,66 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 		emit_log("Bribe failed: not enough credits to reveal the selected enemy unit.")
 		return false
 
-	# Reveal the target's sprite and record rank-only disclosure (do NOT grant the
-	# enemy's vision or clear fog for other tiles).
+	# --- BRIBE SUCCESS ---
+	# 1. Switch ownership to PLAYER for the duration of the bribe.
+	target_entry["owner"] = GameConstants.Team.PLAYER
+	unit_map[target_pos] = target_entry
+
+	# 2. Register the unit in the bribed tracker with its move budget.
+	bribed_units[target_entry.uid] = {
+		"moves_remaining": BRIBE_MOVE_DURATION,
+		"original_owner": GameConstants.Team.AI
+	}
+
+	# 3. Fully reveal the unit to the bribing player (sprite + rank panel).
 	revealed_enemy_tiles[target_pos] = true
 	revealed_rank_only[target_pos] = target_rank
-	emit_log("Bribe successful: revealed rank %s for the selected enemy unit." % UNIT_RANK_NAMES.get(target_entry.type, "Unknown"))
+
+	# 4. Update the tile sprite so it shows the real unit texture (not Enemy.png).
+	tile_map[target_pos].set_unit(get_unit_texture(target_entry.type))
+
+	emit_log("Bribe successful! %s is now under your control for %d moves." % [
+		UNIT_RANK_NAMES.get(target_entry.type, "Unknown"),
+		BRIBE_MOVE_DURATION
+	])
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
-	# Refresh fog state so the UI updates correctly (this does NOT grant enemy
-	# vision; it only recomputes visibility from player units and the revealed
-	# tile sprite we set above).
 	update_fog_of_war()
-	# Emit selected info so the right panel updates immediately (rank-only)
 	emit_selected_tile_info(target_pos)
 	return true
+
+# Returns a human-readable label showing remaining bribe moves, or "" if not bribed.
+func _bribe_moves_label(uid: int) -> String:
+	if bribed_units.has(uid):
+		return " [Bribed: %d move(s) left]" % bribed_units[uid]["moves_remaining"]
+	return ""
+
+# Called after a bribed unit successfully moves. Decrements its move counter and
+# reverts ownership when the budget is exhausted.
+func _tick_bribe_for_unit(uid: int, current_pos: Vector2i) -> void:
+	if not bribed_units.has(uid):
+		return
+
+	bribed_units[uid]["moves_remaining"] -= 1
+	var remaining: int = bribed_units[uid]["moves_remaining"]
+
+	if remaining <= 0:
+		# Bribe expired — revert ownership back to the original team.
+		bribed_units.erase(uid)
+		if unit_map.has(current_pos):
+			var entry = unit_map[current_pos]
+			if entry.uid == uid:
+				entry["owner"] = GameConstants.Team.AI
+				unit_map[current_pos] = entry
+				# Remove permanent reveal entries so the unit goes back into fog
+				# once player vision no longer covers its tile.
+				revealed_enemy_tiles.erase(current_pos)
+				revealed_rank_only.erase(current_pos)
+				# Restore the generic enemy sprite in case fog won't cover it immediately.
+				tile_map[current_pos].set_unit(get_unit_texture_for_entry(entry, current_pos))
+				emit_log("Bribe expired: %s has returned to the enemy." % get_display_name(get_unit_name_from_type(entry.type)))
+		update_fog_of_war()
+	else:
+		emit_log("Bribed unit has %d move(s) remaining." % remaining)
 
 func get_display_name(unit_name: String) -> String:
 	var words = unit_name.to_lower().split("_")
@@ -509,9 +511,10 @@ func emit_selected_tile_info(pos: Vector2i):
 
 	var entry = unit_map[pos]
 	var unit: UnitType = entry.type
-	# If this is an enemy and fog is enabled, only show details when the tile
-	# was successfully bribed (revealed_rank_only). Do NOT reveal full details
-	# just because the tile sprite is visible on the map.
+	# If this is an AI-owned unit and fog is enabled, only show details when
+	# the tile was successfully bribed (revealed_rank_only). Bribed units that
+	# are temporarily player-controlled will have owner == PLAYER so they fall
+	# through to the full-info block below automatically.
 	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled():
 		if revealed_rank_only.has(pos):
 			var unit_name = get_unit_name_from_type(unit)
@@ -545,7 +548,9 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 	if unit_map.has(dst):
 		var defender_entry = unit_map[dst]
 
-		# FRIENDLY FIRE PREVENTION: block moves onto tiles occupied by the same team
+		# FRIENDLY FIRE PREVENTION: block moves onto tiles occupied by the same team.
+		# This also prevents bribed (temporarily player-owned) units from attacking
+		# their temporary allies, and prevents the original team from eating them.
 		if get_entry_owner(entry) == get_entry_owner(defender_entry):
 			emit_log("Blocked: Cannot move onto a friendly unit.")
 			return
@@ -556,25 +561,33 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		var bounty_unit_name := ""
 
 		if combat_result == Arbiter.CombatResult.ATTACKER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-					bounty_awarded = _maybe_award_bounty(defender_entry, entry)
-					if bounty_awarded > 0:
-						bounty_unit_name = get_unit_name_from_type(defender_entry.type)
-						unit_map.erase(src)
-						_clear_tile_at(src)
-						unit_map.erase(dst)
-						revealed_enemy_tiles.erase(dst)
-						revealed_rank_only.erase(dst)
-						unit_map[dst] = entry
-						tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
-						moved_uids.append(entry.uid)
-						emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
-					if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-						game_manager.game_over = true
-						emit_log("Game over: attacker captured the flag.")
+				bounty_awarded = _maybe_award_bounty(defender_entry, entry)
+				if bounty_awarded > 0:
+					bounty_unit_name = get_unit_name_from_type(defender_entry.type)
+				# If the defender was a bribed unit that got killed, clean up its bribe record.
+				if bribed_units.has(defender_entry.uid):
+					bribed_units.erase(defender_entry.uid)
+				unit_map.erase(src)
+				_clear_tile_at(src)
+				unit_map.erase(dst)
+				revealed_enemy_tiles.erase(dst)
+				revealed_rank_only.erase(dst)
+				unit_map[dst] = entry
+				tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
+				moved_uids.append(entry.uid)
+				emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
+				# Tick bribe counter for the attacker after a successful combat move.
+				_tick_bribe_for_unit(entry.uid, dst)
+				if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
+					game_manager.game_over = true
+					emit_log("Game over: attacker captured the flag.")
 		elif combat_result == Arbiter.CombatResult.DEFENDER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
 			bounty_awarded = _maybe_award_bounty(entry, defender_entry)
 			if bounty_awarded > 0:
 				bounty_unit_name = get_unit_name_from_type(entry.type)
+			# Attacker was killed — clean up its bribe record if it had one.
+			if bribed_units.has(entry.uid):
+				bribed_units.erase(entry.uid)
 			unit_map.erase(src)
 			_clear_tile_at(src)
 			moved_uids.append(entry.uid)
@@ -592,6 +605,11 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				if defender_bounty > 0:
 					bounty_awarded = defender_bounty
 					bounty_unit_name = get_unit_name_from_type(entry.type)
+			# Both died — clean up bribe records for both.
+			if bribed_units.has(entry.uid):
+				bribed_units.erase(entry.uid)
+			if bribed_units.has(defender_entry.uid):
+				bribed_units.erase(defender_entry.uid)
 			unit_map.erase(src)
 			_clear_tile_at(src)
 			unit_map.erase(dst)
@@ -603,22 +621,28 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		update_fog_of_war()
 		return
 
-	# remove from src
+	# No defender — plain move to empty tile.
 	unit_map.erase(src)
 	_clear_tile_at(src)
 	revealed_enemy_tiles.erase(src)
 	revealed_rank_only.erase(src)
 
-	# place unit at dst
 	unit_map[dst] = entry
 	var tile_dst = tile_map[dst]
 	revealed_enemy_tiles.erase(dst)
 	revealed_rank_only.erase(dst)
 	tile_dst.set_unit(get_unit_texture_for_entry(entry, dst))
 
-	# mark moved
 	moved_uids.append(entry.uid)
-	emit_log("Moved %s from (%d, %d) to (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1])
+	emit_log("Moved %s from (%d, %d) to (%d, %d).%s" % [
+		get_display_name(get_unit_name_from_type(entry.type)),
+		src.x + 1, src.y + 1, dst.x + 1, dst.y + 1,
+		_bribe_moves_label(entry.uid)
+	])
+
+	# Tick the bribe counter for this unit now that it has moved.
+	_tick_bribe_for_unit(entry.uid, dst)
+
 	update_fog_of_war()
 
 func _maybe_award_bounty(killed_entry: Dictionary, killer_entry: Dictionary) -> int:
@@ -700,7 +724,7 @@ func get_turn_number() -> int:
 	return turn_number
 
 func setup_ai_enemy():
-	for unit_data in randomize_ai_positions():
+	for unit_data in AI_TEST_LAYOUT:
 		var pos: Vector2i = unit_data["pos"]
 		if not tile_map.has(pos):
 			continue
@@ -739,6 +763,9 @@ func get_entry_owner(entry) -> GameConstants.Team:
 	return GameConstants.Team.PLAYER
 
 func get_unit_texture_for_entry(entry, pos: Vector2i = Vector2i(-1, -1)) -> String:
+	# Bribed units are temporarily owned by PLAYER — show their real sprite so the
+	# player knows what they control. Once the bribe expires and owner reverts to AI,
+	# this path is no longer taken and they fall back into fog normally.
 	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled():
 		if pos == Vector2i(-1, -1) or not _is_enemy_revealed_or_visible(pos):
 			return "res://assets/units/Enemy.png"

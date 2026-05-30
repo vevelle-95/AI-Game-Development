@@ -19,13 +19,13 @@ enum Rank {
 
 const BOUNTIES = {
 	Rank.PRIVATE: 10,
-	Rank.SERGEANT: 15,
-	Rank.LIEUTENANT: 20,
-	Rank.MAJOR: 30,
-	Rank.COLONEL: 40,
-	Rank.GENERAL_3: 50,
-	Rank.GENERAL_4: 60,
-	Rank.GENERAL_5: 75,
+	Rank.SERGEANT: 25,
+	Rank.LIEUTENANT: 35,
+	Rank.MAJOR: 50,
+	Rank.COLONEL: 60,
+	Rank.GENERAL_3: 70,
+	Rank.GENERAL_4: 70,
+	Rank.GENERAL_5: 70,
 	Rank.SPY: 25,
 	Rank.TRAPO: 35
 }

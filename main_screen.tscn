@@ -185,29 +185,29 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_w0p2i")
 
 [node name="Player Turn" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=1826374627]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 13.0
-offset_right = 305.0
-offset_bottom = 42.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 300.0
+offset_bottom = 44.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 30
 text = "Game of the generals"
 
 [node name="Credits" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=17563800]
 layout_mode = 0
-offset_left = 947.0
-offset_top = 11.0
-offset_right = 1087.0
-offset_bottom = 40.0
+offset_left = 577.0
+offset_top = 13.0
+offset_right = 717.0
+offset_bottom = 42.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 30
 text = "0 CREDITS"
 
 [node name="Turn #" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=28672865]
 layout_mode = 0
-offset_left = 570.0
+offset_left = 275.0
 offset_top = 14.0
-offset_right = 655.0
+offset_right = 360.0
 offset_bottom = 43.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 30
@@ -215,9 +215,9 @@ text = "TURN 1"
 
 [node name="Button" type="Button" parent="UI/VBoxContainer/TopBar" unique_id=1921813739]
 layout_mode = 0
-offset_left = 1739.0
+offset_left = 1573.0
 offset_top = 7.0
-offset_right = 1909.0
+offset_right = 1904.0
 offset_bottom = 48.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 29
@@ -226,20 +226,20 @@ text = "READY"
 
 [node name="Player Timer" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=193463271]
 layout_mode = 0
-offset_left = 1335.0
-offset_top = 10.0
-offset_right = 1475.0
-offset_bottom = 41.0
+offset_left = 1035.0
+offset_top = 14.0
+offset_right = 1157.0
+offset_bottom = 43.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 30
 text = "P1: 00:00"
 
 [node name="AI Timer" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=1328277170]
 layout_mode = 0
-offset_left = 1564.0
-offset_top = 12.0
-offset_right = 1704.0
-offset_bottom = 43.0
+offset_left = 1180.0
+offset_top = 15.0
+offset_right = 1298.0
+offset_bottom = 46.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 30
 text = "AI: 00:00"
@@ -264,8 +264,6 @@ offset_left = 0.0
 offset_top = -2.0
 offset_right = 2.0
 offset_bottom = -2.0
-columns = 10
-rows = 10
 
 [node name="RightPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=67974028]
 custom_minimum_size = Vector2(356, 0)
@@ -420,10 +418,10 @@ texture = ExtResource("5_sjiej")
 expand_mode = 1
 
 [node name="TextureRect4" type="TextureRect" parent="UI" unique_id=2107714351]
-offset_left = 1426.0
-offset_top = 60.0
-offset_right = 1560.0
-offset_bottom = 193.0
+offset_left = 1427.0
+offset_top = 61.0
+offset_right = 1561.0
+offset_bottom = 194.0
 texture = ExtResource("5_sjiej")
 expand_mode = 1
 

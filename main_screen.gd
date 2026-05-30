@@ -43,7 +43,7 @@ func _ready():
 	board.turn_changed.connect(_on_board_turn_changed)
 	board.bounty_changed.connect(_on_board_bounty_changed)
 	top_phase_label.text = "GAME OF THE GENERALS"
-	_update_bounty_label(0, 0, "")
+	_update_bounty_label(0, 0)
 	turn_label.text = board.get_current_turn_name()
 
 
@@ -131,12 +131,12 @@ func _on_board_phase_changed(phase_name: String):
 func _on_board_turn_changed(turn_name: String):
 	turn_label.text = turn_name
 
-func _on_board_bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: String):
-	_update_bounty_label(total_bounty, last_bounty, killed_unit_name)
+func _on_board_bounty_changed(total_bounty: int, last_bounty: int):
+	_update_bounty_label(total_bounty, last_bounty)
 
-func _update_bounty_label(total_bounty: int, last_bounty: int, killed_unit_name: String):
-	if last_bounty > 0 and killed_unit_name != "":
-		bounty_label.text = "CREDITS: %d  (+%d %s)" % [total_bounty, last_bounty, format_unit_name(killed_unit_name)]
+func _update_bounty_label(total_bounty: int, last_bounty: int):
+	if last_bounty > 0:
+		bounty_label.text = "CREDITS: %d  (+%d)" % [total_bounty, last_bounty]
 	else:
 		bounty_label.text = "CREDITS: %d" % total_bounty
 

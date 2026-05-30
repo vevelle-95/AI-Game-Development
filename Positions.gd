@@ -58,7 +58,7 @@ var ai_start_positions2 = [
 		{"pos": Vector2i(6, 1), "type": "PRIVATE"},
 
         #row 2: (Fodder Line with hidden high-value targets)
-        {"pos": Vector2i(3, 2), "type": "PRIVATE"}
+        {"pos": Vector2i(3, 2), "type": "PRIVATE"},
         {"pos": Vector2i(4, 2), "type": "FIVE_STAR"},
         {"pos": Vector2i(5, 2), "type": "PRIVATE"},
         {"pos": Vector2i(6, 2), "type": "SPY"},

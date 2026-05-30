@@ -185,42 +185,42 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_w0p2i")
 
 [node name="Player Turn" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=1826374627]
 layout_mode = 0
-offset_left = 17.0
-offset_top = 20.0
-offset_right = 198.0
+offset_left = 11.0
+offset_top = 14.0
+offset_right = 296.0
 offset_bottom = 43.0
 theme_override_fonts/font = ExtResource("2_7a4el")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "Game of the generals"
 
 [node name="Credits" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=17563800]
 layout_mode = 0
-offset_left = 619.0
-offset_top = 19.0
-offset_right = 705.0
-offset_bottom = 38.0
+offset_left = 1131.0
+offset_top = 16.0
+offset_right = 1254.0
+offset_bottom = 45.0
 theme_override_fonts/font = ExtResource("2_7a4el")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "0 CREDITS"
 
 [node name="Turn #" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=28672865]
 layout_mode = 0
-offset_left = 343.0
-offset_top = 20.0
-offset_right = 400.0
-offset_bottom = 40.0
+offset_left = 559.0
+offset_top = 15.0
+offset_right = 616.0
+offset_bottom = 35.0
 theme_override_fonts/font = ExtResource("2_7a4el")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "TURN 1"
 
 [node name="Button" type="Button" parent="UI/VBoxContainer/TopBar" unique_id=1921813739]
 layout_mode = 0
-offset_left = 909.0
-offset_top = 12.0
-offset_right = 1052.0
-offset_bottom = 43.0
+offset_left = 1524.0
+offset_top = 9.0
+offset_right = 1694.0
+offset_bottom = 50.0
 theme_override_fonts/font = ExtResource("2_7a4el")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 29
 theme_override_styles/normal = SubResource("StyleBoxFlat_7a4el")
 text = "READY"
 
@@ -241,9 +241,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
+offset_top = -2.0
+offset_right = 2.0
+offset_bottom = -2.0
 columns = 10
 rows = 10
 
@@ -260,15 +260,15 @@ offset_top = 14.0
 offset_right = 279.0
 offset_bottom = 33.0
 theme_override_fonts/font = ExtResource("2_7a4el")
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 29
 text = "UNIT INFO"
 
 [node name="Selected Unit" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=1527922695]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 43.0
+offset_top = 55.0
 offset_right = 303.0
-offset_bottom = 66.0
+offset_bottom = 78.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 20
 text = "Selected Unit: None"
@@ -276,9 +276,9 @@ text = "Selected Unit: None"
 [node name="UnitPicker" type="OptionButton" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=913005541]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 66.0
+offset_top = 92.0
 offset_right = 344.0
-offset_bottom = 97.0
+offset_bottom = 123.0
 theme_override_colors/font_outline_color = Color(0.1254902, 0.14901961, 0.11372549, 1)
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 18
@@ -287,9 +287,9 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_ywh4s")
 [node name="BribeButton" type="Button" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=900000020]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 100.0
+offset_top = 134.0
 offset_right = 344.0
-offset_bottom = 132.0
+offset_bottom = 166.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_7a4el")
@@ -298,9 +298,9 @@ text = "BRIBE"
 [node name="Stats" type="RichTextLabel" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=323194217]
 layout_mode = 0
 offset_left = 13.0
-offset_top = 140.0
-offset_right = 319.0
-offset_bottom = 430.0
+offset_top = 185.0
+offset_right = 339.0
+offset_bottom = 518.0
 theme_override_fonts/normal_font = ExtResource("2_7a4el")
 theme_override_fonts/bold_font = ExtResource("2_7a4el")
 theme_override_fonts/bold_italics_font = ExtResource("2_7a4el")
@@ -316,9 +316,9 @@ Movement:
 
 [node name="Space" type="Control" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=993305777]
 anchors_preset = 0
-offset_top = 434.0
+offset_top = 532.0
 offset_right = 356.0
-offset_bottom = 438.0
+offset_bottom = 536.0
 
 [node name="ColorRect" type="ColorRect" parent="UI/VBoxContainer/MiddleArea/RightPanel/Space" unique_id=1865823816]
 layout_mode = 0
@@ -327,39 +327,35 @@ offset_bottom = 3.0
 color = Color(0.2901961, 0.2901961, 0.2901961, 1)
 
 [node name="LogPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=900000010]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 0
-offset_top = 425.0
+offset_top = 534.0
 offset_right = 356.0
-offset_bottom = 594.0
+offset_bottom = 1017.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_0hkt3")
 
-[node name="LogVBox" type="VBoxContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel" unique_id=900000011]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 9.0
-offset_top = 27.0
-offset_right = -9.0
-offset_bottom = -9.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 8
-
-[node name="Game Log" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogVBox" unique_id=2034027505]
-layout_mode = 2
+[node name="Game Log" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel" unique_id=2034027505]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 17.0
+offset_right = 345.0
+offset_bottom = 39.0
 theme_override_fonts/font = ExtResource("2_7a4el")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 22
 text = "GAME LOG:"
 
-[node name="LogScroll" type="ScrollContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogVBox" unique_id=1659285111]
-layout_mode = 2
+[node name="LogScroll" type="ScrollContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel" unique_id=1659285111]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 0
+offset_left = 9.0
+offset_top = 44.0
+offset_right = 347.0
+offset_bottom = 474.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Log" type="RichTextLabel" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogVBox/LogScroll" unique_id=2055390886]
-custom_minimum_size = Vector2(0, 110)
+[node name="Log" type="RichTextLabel" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogScroll" unique_id=2055390886]
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -367,105 +363,102 @@ focus_mode = 2
 scroll_active = false
 selection_enabled = true
 
-[node name="TextureRect2" type="TextureRect" parent="UI" unique_id=1755082086]
-anchors_preset = -1
+[node name="LogVBox" type="VBoxContainer" parent="UI/VBoxContainer/MiddleArea/RightPanel/LogPanel" unique_id=900000011]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 610.0
-offset_right = -1113.0
+offset_left = 3.0
+offset_top = 62.0
+offset_right = -15.0
+offset_bottom = 39.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="TextureRect2" type="TextureRect" parent="UI" unique_id=1755082086]
+offset_top = 845.0
+offset_right = 237.0
+offset_bottom = 1080.0
 texture = ExtResource("5_sjiej")
 expand_mode = 1
 
 [node name="TextureRect5" type="TextureRect" parent="UI" unique_id=2037160865]
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 715.0
-offset_top = 610.0
-offset_right = -398.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = 1303.0
+offset_top = 959.0
+offset_right = 1436.0
+offset_bottom = 1080.0
 texture = ExtResource("5_sjiej")
 expand_mode = 1
 
 [node name="TextureRect3" type="TextureRect" parent="UI" unique_id=1058500550]
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 753.0
-offset_top = 610.0
-offset_right = -360.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = 1434.0
+offset_top = 949.0
+offset_right = 1560.0
+offset_bottom = 1080.0
 texture = ExtResource("5_sjiej")
 expand_mode = 1
 
 [node name="TextureRect4" type="TextureRect" parent="UI" unique_id=2107714351]
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 736.0
+offset_left = 1426.0
 offset_top = 60.0
-offset_right = -360.0
-offset_bottom = -530.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 1560.0
+offset_bottom = 193.0
 texture = ExtResource("5_sjiej")
 expand_mode = 1
 
 [node name="TextureRect23" type="TextureRect" parent="UI" unique_id=506716639]
-offset_top = 579.0
-offset_right = 28.0
-offset_bottom = 609.0
+offset_left = 1.0
+offset_top = 207.0
+offset_right = 97.0
+offset_bottom = 302.0
 texture = ExtResource("6_4sv2p")
 expand_mode = 1
 
 [node name="TextureRect24" type="TextureRect" parent="UI" unique_id=1343412936]
-offset_left = 38.0
-offset_top = 627.0
-offset_right = 58.0
-offset_bottom = 648.0
+offset_left = 113.0
+offset_top = 792.0
+offset_right = 168.0
+offset_bottom = 844.0
 texture = ExtResource("6_4sv2p")
 expand_mode = 1
 
 [node name="TextureRect26" type="TextureRect" parent="UI" unique_id=914590632]
-offset_left = 749.0
-offset_top = 569.0
-offset_right = 791.0
-offset_bottom = 611.0
+offset_left = 1430.0
+offset_top = 821.0
+offset_right = 1559.0
+offset_bottom = 949.0
 texture = ExtResource("6_4sv2p")
 expand_mode = 1
 
 [node name="TextureRect27" type="TextureRect" parent="UI" unique_id=1619330157]
-offset_left = 719.0
-offset_top = 580.0
-offset_right = 749.0
-offset_bottom = 610.0
+offset_left = 1456.0
+offset_top = 193.0
+offset_right = 1560.0
+offset_bottom = 291.0
 texture = ExtResource("6_4sv2p")
 expand_mode = 1
 
 [node name="TextureRect25" type="TextureRect" parent="UI" unique_id=524663144]
-offset_left = 39.0
-offset_top = 608.0
-offset_right = 58.0
-offset_bottom = 628.0
+offset_left = 1.0
+offset_top = 735.0
+offset_right = 114.0
+offset_bottom = 845.0
 texture = ExtResource("7_0osx7")
 expand_mode = 1
 
 [node name="TextureRect29" type="TextureRect" parent="UI" unique_id=450519077]
 offset_left = -1.0
 offset_top = 60.0
-offset_right = 54.0
-offset_bottom = 115.0
+offset_right = 147.0
+offset_bottom = 206.0
 texture = ExtResource("7_0osx7")
 expand_mode = 1
 
 [node name="TextureRect28" type="TextureRect" parent="UI" unique_id=438183906]
-offset_left = 757.0
-offset_top = 532.0
-offset_right = 791.0
-offset_bottom = 568.0
+offset_left = 1318.0
+offset_top = 842.0
+offset_right = 1432.0
+offset_bottom = 958.0
 texture = ExtResource("7_0osx7")
 expand_mode = 1

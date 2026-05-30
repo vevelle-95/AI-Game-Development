@@ -5,7 +5,7 @@ func _ready():
 	call_deferred("_connect_play_button")
 
 func _connect_play_button():
-	var btn = get_node_or_null("Center/VBox/PlayButton")
+	var btn = get_node_or_null("MainMenu#Center/MainMenu_Center#VBox/MainMenu_Center_VBox#PlayButton")
 	if not btn:
 		btn = _find_play_button(self )
 	if btn:

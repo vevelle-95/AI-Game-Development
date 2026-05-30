@@ -130,6 +130,7 @@ func _ready():
 	initialize_counts()
 	create_board()
 	setup_ai_enemy()
+	add_child(game_manager)
 	update_fog_of_war()
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	emit_signal("turn_changed", get_current_turn_name())

@@ -10,6 +10,8 @@ extends Node2D
 @onready var unit_picker = $"UI/VBoxContainer/MiddleArea/RightPanel/UnitPicker"
 @onready var stats_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/Stats"
 @onready var log_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogScroll/Log"
+@onready var p1_timer_label: Label = $"UI/VBoxContainer/TopBar/Player Timer"
+@onready var ai_timer_label: Label = $"UI/VBoxContainer/TopBar/AI Timer"
 
 const MAX_LOG_LINES := 300
 var log_lines: Array[String] = []
@@ -175,3 +177,36 @@ func _on_selected_tile_unit_info(unit_name: String, rank: String, vision: String
 
 func reset_stats():
 	stats_label.text = "Rank: \nVision: \nMovement: \n\nStrong Against: \nWeak Against: "
+
+func format_time(time_in_seconds: float) -> String:
+	if time_in_seconds <= 0.0:
+		return "00:00"
+	var minutes := int(time_in_seconds) / 60
+	var seconds := int(time_in_seconds) % 60
+	return "%02d:%02d" % [minutes, seconds]
+
+
+func _process(delta: float) -> void:
+	# Ensure the board and game manager instances exist before pulling data
+	if board and board.game_manager:
+		var gm = board.game_manager
+		
+		# 1. Update Player 1 Timer UI
+		if p1_timer_label:
+			var p1_time = gm.p1_time_remaining
+			if p1_time > 0.0:
+				var p1_mins := int(p1_time) / 60
+				var p1_secs := int(p1_time) % 60
+				p1_timer_label.text = "P1: %02d:%02d" % [p1_mins, p1_secs]
+			else:
+				p1_timer_label.text = "P1: TIME'S UP!"
+
+		# 2. Update AI Timer UI
+		if ai_timer_label:
+			var ai_time = gm.ai_time_remaining
+			if ai_time > 0.0:
+				var ai_mins := int(ai_time) / 60
+				var ai_secs := int(ai_time) % 60
+				ai_timer_label.text = "AI: %02d:%02d" % [ai_mins, ai_secs]
+			else:
+				ai_timer_label.text = "AI: TIME'S UP!"

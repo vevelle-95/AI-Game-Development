@@ -195,9 +195,9 @@ text = "Game of the generals"
 
 [node name="Credits" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=17563800]
 layout_mode = 0
-offset_left = 1131.0
+offset_left = 860.0
 offset_top = 16.0
-offset_right = 1254.0
+offset_right = 1000.0
 offset_bottom = 45.0
 theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 30
@@ -223,6 +223,26 @@ theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 29
 theme_override_styles/normal = SubResource("StyleBoxFlat_7a4el")
 text = "READY"
+
+[node name="Player Timer" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=193463271]
+layout_mode = 0
+offset_left = 1040.0
+offset_top = 14.0
+offset_right = 1180.0
+offset_bottom = 45.0
+theme_override_fonts/font = ExtResource("2_7a4el")
+theme_override_font_sizes/font_size = 30
+text = "P1: 00:00"
+
+[node name="AI Timer" type="Label" parent="UI/VBoxContainer/TopBar" unique_id=1328277170]
+layout_mode = 0
+offset_left = 1185.0
+offset_top = 14.0
+offset_right = 1325.0
+offset_bottom = 45.0
+theme_override_fonts/font = ExtResource("2_7a4el")
+theme_override_font_sizes/font_size = 30
+text = "AI: 00:00"
 
 [node name="MiddleArea" type="HBoxContainer" parent="UI/VBoxContainer" unique_id=900000002]
 layout_mode = 2

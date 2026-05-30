@@ -744,6 +744,21 @@ func unit_type_to_rank(unit: UnitType) -> GameConstants.Rank:
 func get_turn_number() -> int:
 	return turn_number
 
+#yung naunang code before yung randomized smth
+#func setup_ai_enemy():
+#	for unit_data in AI_TEST_LAYOUT:
+#		var pos: Vector2i = unit_data["pos"]
+#		if not tile_map.has(pos):
+#			continue
+#		var entry = {
+#			"type": unit_data["type"],
+#			"uid": next_unit_uid,
+#			"owner": GameConstants.Team.AI
+#		}
+#		next_unit_uid += 1
+#		unit_map[pos] = entry
+#		tile_map[pos].set_unit(get_unit_texture_for_entry(entry, pos))
+
 func setup_ai_enemy():
 	var available_positions = []
 	# AI deploys in top 4 rows

@@ -116,9 +116,21 @@ func is_enemy_visible(
 	target_position: Vector2i,
 	observer_rank: GameConstants.Rank
 ) -> bool:
+
 	var vision_range = get_vision_range(observer_rank)
-	var distance = observer_position.distance_to(target_position)
-	return distance <= vision_range
+
+	var dx = abs(target_position.x - observer_position.x)
+	var dy = abs(target_position.y - observer_position.y)
+
+	# Same column
+	if dx == 0 and dy <= vision_range:
+		return true
+
+	# Same row
+	if dy == 0 and dx <= vision_range:
+		return true
+
+	return false
 
 #AI / Strategic Helpers
 func is_high_value(rank: GameConstants.Rank) -> bool:

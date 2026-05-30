@@ -72,7 +72,7 @@ func check_bribe_success(enemy_rank: GameConstants.Rank) -> bool:
 func get_bribe_cost(enemy_rank: GameConstants.Rank) -> int:
 	if enemy_rank == GameConstants.Rank.FLAG:
 		return 0
-	return GameConstants.BOUNTIES.get(enemy_rank, 0)
+	return GameConstants.BRIBE_COSTS.get(enemy_rank, 0)
 
 func can_bribe_enemy(enemy_rank: GameConstants.Rank) -> bool:
 	return check_bribe_success(enemy_rank)

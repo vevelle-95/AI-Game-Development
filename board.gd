@@ -563,7 +563,7 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		if combat_result == Arbiter.CombatResult.ATTACKER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
 				bounty_awarded = _maybe_award_bounty(defender_entry, entry)
 				if bounty_awarded > 0:
-					bounty_unit_name = get_unit_name_from_type(defender_entry.type)
+					bounty_unit_name = "Enemy Unit"
 				# If the defender was a bribed unit that got killed, clean up its bribe record.
 				if bribed_units.has(defender_entry.uid):
 					bribed_units.erase(defender_entry.uid)
@@ -575,7 +575,14 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				unit_map[dst] = entry
 				tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
 				moved_uids.append(entry.uid)
-				emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
+				emit_log(
+					get_fog_combat_message(
+						combat_result,
+						get_entry_owner(entry) == GameConstants.Team.PLAYER,
+						entry,
+						defender_entry
+					)
+				)
 				# Tick bribe counter for the attacker after a successful combat move.
 				_tick_bribe_for_unit(entry.uid, dst)
 				if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
@@ -591,7 +598,14 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 			unit_map.erase(src)
 			_clear_tile_at(src)
 			moved_uids.append(entry.uid)
-			emit_log("%s lost against %s at (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), get_display_name(get_unit_name_from_type(defender_entry.type)), dst.x + 1, dst.y + 1])
+			emit_log(
+				get_fog_combat_message(
+					combat_result,
+					get_entry_owner(entry) == GameConstants.Team.PLAYER,
+					entry,
+					defender_entry
+				)
+			)
 			if combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
 				game_manager.game_over = true
 				emit_log("Game over: defender kept the flag.")
@@ -615,7 +629,14 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 			unit_map.erase(dst)
 			_clear_tile_at(dst)
 			moved_uids.append(entry.uid)
-			emit_log("%s and %s eliminated each other at (%d, %d)." % [get_display_name(get_unit_name_from_type(entry.type)), get_display_name(get_unit_name_from_type(defender_entry.type)), dst.x + 1, dst.y + 1])
+			emit_log(
+				get_fog_combat_message(
+					combat_result,
+					get_entry_owner(entry) == GameConstants.Team.PLAYER,
+					entry,
+					defender_entry
+				)
+			)
 		if bounty_awarded > 0:
 			emit_signal("bounty_changed", game_manager.trapo_wallet, bounty_awarded, bounty_unit_name)
 		update_fog_of_war()
@@ -800,4 +821,58 @@ func get_unit_texture(unit: UnitType) -> String:
 			return "res://assets/units/Trapo.png"
 		UnitType.PRIVATE:
 			return "res://assets/units/Private.png"
+	return ""
+
+func get_fog_combat_message(
+	combat_result: Arbiter.CombatResult,
+	attacker_is_player: bool,
+	attacker_entry: Dictionary,
+	defender_entry: Dictionary
+) -> String:
+
+	var attacker_name = get_display_name(
+		get_unit_name_from_type(attacker_entry.type)
+	)
+
+	var defender_name = get_display_name(
+		get_unit_name_from_type(defender_entry.type)
+	)
+
+	match combat_result:
+
+		Arbiter.CombatResult.ATTACKER_WINS:
+
+			if attacker_is_player:
+				return "Your %s captured an enemy unit." % attacker_name
+			else:
+				return "The enemy captured your %s." % defender_name
+
+		Arbiter.CombatResult.DEFENDER_WINS:
+
+			if attacker_is_player:
+				return "Your %s was captured by an enemy unit." % attacker_name
+			else:
+				return "Your %s captured an enemy unit." % defender_name
+
+		Arbiter.CombatResult.TIE:
+
+			if attacker_is_player:
+				return "Your %s was eliminated in combat." % attacker_name
+			else:
+				return "Your %s was eliminated in combat." % defender_name
+
+		Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
+
+			if attacker_is_player:
+				return "Your unit captured the enemy Flag!"
+			else:
+				return "The enemy captured your Flag!"
+
+		Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
+
+			if attacker_is_player:
+				return "Your Flag was captured."
+			else:
+				return "The enemy Flag was captured."
+
 	return ""

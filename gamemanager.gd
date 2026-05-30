@@ -31,13 +31,29 @@ func add_kill_bounty(killed_rank: GameConstants.Rank) -> void:
 
 func check_bribe_success(enemy_rank: GameConstants.Rank) -> bool:
 	# Checks if the TRAPO has enough money to bribe the enemy piece based on its rank
-	var enemy_bribe: int = GameConstants.BOUNTIES.get(enemy_rank, 0)
+	var enemy_bribe: int = get_bribe_cost(enemy_rank)
+	if enemy_bribe <= 0:
+		return false
 	return trapo_wallet >= enemy_bribe
+
+func get_bribe_cost(enemy_rank: GameConstants.Rank) -> int:
+	if enemy_rank == GameConstants.Rank.FLAG:
+		return 0
+	return GameConstants.BOUNTIES.get(enemy_rank, 0)
+
+func can_bribe_enemy(enemy_rank: GameConstants.Rank) -> bool:
+	return check_bribe_success(enemy_rank)
+
+func bribe_enemy(enemy_rank: GameConstants.Rank) -> bool:
+	if not can_bribe_enemy(enemy_rank):
+		return false
+	deduct_bribe_cost(enemy_rank)
+	return true
 
 func deduct_bribe_cost(enemy_rank: GameConstants.Rank) -> void:
 	# If the TRAPO successfully bribes an enemy piece
 	# deduct the corresponding cost from the TRAPO wallet
-	var cost: int = GameConstants.BOUNTIES.get(enemy_rank, 0)
+	var cost: int = get_bribe_cost(enemy_rank)
 	if check_bribe_success(enemy_rank):
 		trapo_wallet -= cost
 

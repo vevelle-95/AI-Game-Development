@@ -4,14 +4,9 @@ class_name UnitBehavior
 # MOVEMENT RULES
 
 func can_move(rank: GameConstants.Rank) -> bool:
-	#flag cannot move
-	if rank == GameConstants.Rank.FLAG:
-		return false
 	return true
 
 func get_move_range(rank: GameConstants.Rank) -> int:
-	if rank == GameConstants.Rank.FLAG:
-		return 0
 	return 1
 
 # VISION RULES

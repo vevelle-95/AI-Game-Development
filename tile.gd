@@ -39,7 +39,7 @@ func apply_color():
 	# Player side: Khaki Sand #A39467 -> (163,148,103)
 	var enemy_color = Color(78.0 / 255.0, 82.0 / 255.0, 56.0 / 255.0)
 	var player_color = Color(163.0 / 255.0, 148.0 / 255.0, 103.0 / 255.0)
-	if grid_pos.y < 4: # top half (for 8-row board)
+	if grid_pos.y < 5: # top half for a 10-row board
 		style.bg_color = enemy_color
 	else:
 		style.bg_color = player_color

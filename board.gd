@@ -11,8 +11,8 @@ signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: Str
 @onready var arbiter: Arbiter = Arbiter.new()
 
 @export var tile_scene: PackedScene
-@export var columns := 9
-@export var rows := 8
+@export var columns := 10
+@export var rows := 10
 
 @onready var grid = $"CenterContainer/Grid"
 
@@ -38,10 +38,12 @@ var placed_counts := {}
 var setup_locked := false
 var next_unit_uid := 1
 var moved_uids := []
+var revealed_enemy_tiles := {}
 var armed_unit_pos := Vector2i(-1, -1)
 var pickup_entry = null
 var pickup_src_pos := Vector2i(-1, -1)
 var turn_number := 1
+var bribe_mode := false
 
 # TEMP: what unit you are placing
 var selected_unit := UnitType.FIVE_STAR
@@ -60,7 +62,7 @@ const UNIT_ORDER: Array[String] = [
 	"PRIVATE"
 ]
 
-const DEPLOYMENT_ROWS := 3
+const DEPLOYMENT_ROWS := 4
 
 const UNIT_LIMITS := {
 	UnitType.FLAG: 1,
@@ -163,6 +165,14 @@ func _process(_delta):
 	grid.custom_minimum_size = Vector2(tile_size * columns, tile_size * rows)
 
 func _on_tile_clicked(pos: Vector2i):
+	if bribe_mode:
+		bribe_mode = false
+		attempt_bribe(selected_tile, pos)
+		selected_tile = pos
+		emit_selected_tile_info(pos)
+		highlight_tiles()
+		return
+
 	selected_tile = pos
 	print("Selected:", pos)
 
@@ -280,7 +290,7 @@ func place_unit(pos: Vector2i):
 	var tile = tile_map[pos]
 
 	# convert unit → image path (temporary hardcoded version)
-	tile.set_unit(get_unit_texture_for_entry(entry))
+	tile.set_unit(get_unit_texture_for_entry(entry, pos))
 
 	var selected_name = get_display_name(get_selected_unit_name())
 	var remaining_for_selected = get_remaining_for_unit(selected_unit)
@@ -345,6 +355,55 @@ func lock_setup_phase() -> bool:
 	emit_signal("phase_changed", "battle")
 	return true
 
+func start_bribe_mode() -> void:
+	if not setup_locked:
+		emit_log("Blocked: Start battle phase before using Bribe.")
+		return
+	if game_manager.current_turn != GameManager.PlayTurn.PLAYER1:
+		emit_log("Blocked: Bribe is available on your turn only.")
+		return
+	if selected_tile.x == -1 or not unit_map.has(selected_tile):
+		emit_log("Select a Trapo unit before using Bribe.")
+		return
+	var selected_entry = unit_map[selected_tile]
+	if get_entry_owner(selected_entry) != GameConstants.Team.PLAYER or get_unit_name_from_type(selected_entry.type) != "TRAPO":
+		emit_log("Select your Trapo unit before using Bribe.")
+		return
+	bribe_mode = true
+	emit_log("Bribe mode active. Click an enemy unit within Trapo range.")
+
+func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
+	if source_pos.x == -1 or not unit_map.has(source_pos):
+		emit_log("Bribe cancelled: select a Trapo first.")
+		return false
+	if not unit_map.has(target_pos):
+		emit_log("Bribe failed: choose an enemy unit.")
+		return false
+
+	var source_entry = unit_map[source_pos]
+	var target_entry = unit_map[target_pos]
+	if get_entry_owner(source_entry) != GameConstants.Team.PLAYER or get_unit_name_from_type(source_entry.type) != "TRAPO":
+		emit_log("Bribe failed: source unit must be your Trapo.")
+		return false
+	if get_entry_owner(target_entry) != GameConstants.Team.AI:
+		emit_log("Bribe failed: target must be an enemy unit.")
+		return false
+
+	var target_rank = unit_type_to_rank(target_entry.type)
+	if not unit_behavior.can_corrupt(source_pos, target_pos, target_rank):
+		emit_log("Bribe failed: target is out of Trapo range or cannot be bribed.")
+		return false
+	if not game_manager.bribe_enemy(target_rank):
+		emit_log("Bribe failed: not enough credits to reveal the selected enemy unit.")
+		return false
+
+	revealed_enemy_tiles[target_pos] = true
+	emit_log("Trapo bribed the selected enemy unit and revealed its identity.")
+	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
+	update_fog_of_war()
+	emit_selected_tile_info(target_pos)
+	return true
+
 func get_display_name(unit_name: String) -> String:
 	var words = unit_name.to_lower().split("_")
 	for i in words.size():
@@ -362,7 +421,7 @@ func emit_selected_tile_info(pos: Vector2i):
 
 	var entry = unit_map[pos]
 	var unit: UnitType = entry.type
-	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled():
+	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled() and not _is_enemy_revealed_or_visible(pos):
 		emit_signal("selected_tile_unit_info", "", "", "", "")
 		return
 	var unit_name = get_unit_name_from_type(unit)
@@ -371,6 +430,9 @@ func emit_selected_tile_info(pos: Vector2i):
 	var vision = str(game_manager.visible_tiles_for_piece(rank_value))
 	var movement = str(unit_behavior.get_move_range(rank_value))
 	emit_signal("selected_tile_unit_info", unit_name, rank, vision, movement)
+
+func _is_enemy_revealed_or_visible(pos: Vector2i) -> bool:
+	return revealed_enemy_tiles.has(pos) or is_tile_visible_to_player(pos)
 
 func _clear_tile_at(pos: Vector2i):
 	if tile_map.has(pos):
@@ -394,8 +456,9 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 			unit_map.erase(src)
 			_clear_tile_at(src)
 			unit_map.erase(dst)
+			revealed_enemy_tiles.erase(dst)
 			unit_map[dst] = entry
-			tile_map[dst].set_unit(get_unit_texture_for_entry(entry))
+			tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
 			moved_uids.append(entry.uid)
 			emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
 			if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
@@ -436,11 +499,13 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 	# remove from src
 	unit_map.erase(src)
 	_clear_tile_at(src)
+	revealed_enemy_tiles.erase(src)
 
 	# place unit at dst
 	unit_map[dst] = entry
 	var tile_dst = tile_map[dst]
-	tile_dst.set_unit(get_unit_texture_for_entry(entry))
+	revealed_enemy_tiles.erase(dst)
+	tile_dst.set_unit(get_unit_texture_for_entry(entry, dst))
 
 	# mark moved
 	moved_uids.append(entry.uid)
@@ -482,6 +547,7 @@ func end_turn():
 	turn_number += 1
 	moved_uids.clear()
 	armed_unit_pos = Vector2i(-1, -1)
+	bribe_mode = false
 	emit_signal("turn_changed", get_current_turn_name())
 	emit_log("Turn ended. Movement reset.")
 
@@ -535,7 +601,7 @@ func setup_ai_enemy():
 		}
 		next_unit_uid += 1
 		unit_map[pos] = entry
-		tile_map[pos].set_unit(get_unit_texture_for_entry(entry))
+		tile_map[pos].set_unit(get_unit_texture_for_entry(entry, pos))
 
 func update_fog_of_war():
 	if not game_manager.fog_of_war_enabled():
@@ -545,7 +611,7 @@ func update_fog_of_war():
 
 	var top_half_limit := int(rows / 2)
 	for pos in tile_map.keys():
-		var should_show_fog: bool = pos.y < top_half_limit and not is_tile_visible_to_player(pos)
+		var should_show_fog: bool = pos.y < top_half_limit and not is_tile_visible_to_player(pos) and not revealed_enemy_tiles.has(pos)
 		tile_map[pos].set_fog_visible(should_show_fog)
 
 func is_tile_visible_to_player(target_pos: Vector2i) -> bool:
@@ -562,9 +628,9 @@ func get_entry_owner(entry) -> GameConstants.Team:
 		return entry.owner
 	return GameConstants.Team.PLAYER
 
-func get_unit_texture_for_entry(entry) -> String:
-	if get_entry_owner(entry) == GameConstants.Team.AI:
-		if game_manager.fog_of_war_enabled():
+func get_unit_texture_for_entry(entry, pos: Vector2i = Vector2i(-1, -1)) -> String:
+	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled():
+		if pos == Vector2i(-1, -1) or not _is_enemy_revealed_or_visible(pos):
 			return "res://assets/units/Enemy.png"
 	return get_unit_texture(entry.type)
 

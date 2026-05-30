@@ -244,8 +244,8 @@ offset_left = 0.0
 offset_top = 0.0
 offset_right = 0.0
 offset_bottom = 0.0
-columns = 9
-rows = 8
+columns = 10
+rows = 10
 
 [node name="RightPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=67974028]
 custom_minimum_size = Vector2(356, 0)
@@ -284,10 +284,21 @@ theme_override_fonts/font = ExtResource("2_7a4el")
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_ywh4s")
 
+[node name="BribeButton" type="Button" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=900000020]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 100.0
+offset_right = 344.0
+offset_bottom = 132.0
+theme_override_fonts/font = ExtResource("2_7a4el")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_7a4el")
+text = "BRIBE"
+
 [node name="Stats" type="RichTextLabel" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=323194217]
 layout_mode = 0
 offset_left = 13.0
-offset_top = 107.0
+offset_top = 140.0
 offset_right = 319.0
 offset_bottom = 430.0
 theme_override_fonts/normal_font = ExtResource("2_7a4el")

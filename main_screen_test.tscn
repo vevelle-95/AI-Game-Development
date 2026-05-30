@@ -6,5 +6,5 @@
 
 [node name="Board" parent="." unique_id=1583691961 instance=ExtResource("1")]
 anchors_preset = 0
-columns = 9
-rows = 8
+columns = 10
+rows = 10

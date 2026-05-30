@@ -5,6 +5,7 @@ extends Node2D
 @onready var bounty_label = $"UI/VBoxContainer/TopBar/Credits"
 @onready var turn_label = $"UI/VBoxContainer/TopBar/Turn #"
 @onready var ready_button = $"UI/VBoxContainer/TopBar/Button"
+@onready var bribe_button = $"UI/VBoxContainer/MiddleArea/RightPanel/BribeButton"
 @onready var selected_unit_label = $"UI/VBoxContainer/MiddleArea/RightPanel/Selected Unit"
 @onready var unit_picker = $"UI/VBoxContainer/MiddleArea/RightPanel/UnitPicker"
 @onready var stats_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/Stats"
@@ -26,13 +27,14 @@ const UNIT_MATCHUP_DETAILS := {
 	"PRIVATE": {"strong": "Spy", "weak": "Sergeant and above"}
 }
 
-const TRAPO_SPECIAL_TEXT := "Trapo Unit (Special Ability System)\nThe Trapo unit has a unique ability called Corrupt, which allows temporary control of enemy units using in-game currency.\n\nAbility: Corrupt\nCan target any enemy unit except the Flag\nControlled unit duration: 2 turns\nControlled units cannot capture the Flag\nControlled units cannot use special abilities\n\nCost System:\nPrivate: Low cost\nSergeant-Lieutenant: Medium cost\nMajor-Colonel: High cost\nGenerals: Very high cost\n\nRestrictions:\nAbility range: Must be within 2 tiles\nCooldown: 3-5 turns after use\nCannot repeatedly target the same unit consecutively\n\nThis system introduces strategic resource management and decision-making."
+const TRAPO_SPECIAL_TEXT := "Trapo Unit (Bribe System)\nThe Trapo unit can bribe an enemy unit to reveal its identity through fog of war.\n\nAbility: Bribe\nTarget any enemy unit except the Flag\nReveal duration: Permanent until the tile changes\nBribe cost is based on the target's bounty\n\nRestrictions:\nAbility range: Must be within 2 tiles\nRequires enough credits in the Trapo wallet\nWorks only on your turn\n\nThis gives the Trapo a vision-focused support skill instead of a combat ability."
 
 func _ready():
 	setup_unit_picker()
 	setup_game_log()
 	reset_stats()
 	setup_ready_button()
+	setup_bribe_button()
 	board.log_message.connect(_on_board_log_message)
 	board.selected_tile_unit_info.connect(_on_selected_tile_unit_info)
 	board.phase_changed.connect(_on_board_phase_changed)
@@ -87,9 +89,18 @@ func setup_ready_button():
 	ready_button.pressed.connect(_on_ready_button_pressed)
 	ready_button.disabled = false
 
+func setup_bribe_button():
+	bribe_button.text = "BRIBE"
+	bribe_button.pressed.connect(_on_bribe_button_pressed)
+	bribe_button.disabled = false
+	bribe_button.visible = false
+
 func _on_end_turn_pressed():
 	board.end_turn()
 	append_log("End Turn pressed.")
+
+func _on_bribe_button_pressed():
+	board.start_bribe_mode()
 
 func _on_ready_button_pressed():
 	if board.lock_setup_phase():
@@ -133,12 +144,16 @@ func append_log(message: String):
 
 func _on_selected_tile_unit_info(unit_name: String, rank: String, vision: String, movement: String):
 	if unit_name == "":
+		bribe_button.visible = false
 		reset_stats()
 		return
 
 	if unit_name == "TRAPO":
+		bribe_button.visible = true
 		stats_label.text = "Rank: %s\nVision: %s\nMovement: %s\n\n%s" % [rank, vision, movement, TRAPO_SPECIAL_TEXT]
 		return
+
+	bribe_button.visible = false
 
 	var matchup = UNIT_MATCHUP_DETAILS.get(unit_name, {"strong": "Unknown", "weak": "Unknown"})
 	stats_label.text = "Rank: %s\nVision: %s\nMovement: %s\n\nStrong Against: %s\nWeak Against: %s" % [rank, vision, movement, matchup["strong"], matchup["weak"]]

@@ -116,19 +116,19 @@ const UNIT_MOVEMENT := {
 	UnitType.PRIVATE: 1
 }
 
-const AI_TEST_LAYOUT := [
-	{"pos": Vector2i(0, 0), "type": UnitType.FLAG},
-	{"pos": Vector2i(1, 0), "type": UnitType.FIVE_STAR},
-	{"pos": Vector2i(2, 0), "type": UnitType.FOUR_STAR},
-	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
-	{"pos": Vector2i(4, 0), "type": UnitType.COLONEL},
-	{"pos": Vector2i(5, 0), "type": UnitType.MAJOR},
-	{"pos": Vector2i(6, 0), "type": UnitType.LIEUTENANT},
-	{"pos": Vector2i(7, 0), "type": UnitType.SERGEANT},
-	{"pos": Vector2i(8, 0), "type": UnitType.SPY},
-	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
-	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE}
-]
+#const AI_TEST_LAYOUT := [
+#	{"pos": Vector2i(0, 0), "type": UnitType.FLAG},
+#	{"pos": Vector2i(1, 0), "type": UnitType.FIVE_STAR},
+#	{"pos": Vector2i(2, 0), "type": UnitType.FOUR_STAR},
+#	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
+#	{"pos": Vector2i(4, 0), "type": UnitType.COLONEL},
+#	{"pos": Vector2i(5, 0), "type": UnitType.MAJOR},
+#	{"pos": Vector2i(6, 0), "type": UnitType.LIEUTENANT},
+#	{"pos": Vector2i(7, 0), "type": UnitType.SERGEANT},
+#	{"pos": Vector2i(8, 0), "type": UnitType.SPY},
+#	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
+#	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE}
+#]
 
 const TURN_NAMES := {
 	GameManager.PlayTurn.PLAYER1: "PLAYER TURN",
@@ -745,18 +745,40 @@ func get_turn_number() -> int:
 	return turn_number
 
 func setup_ai_enemy():
-	for unit_data in AI_TEST_LAYOUT:
-		var pos: Vector2i = unit_data["pos"]
-		if not tile_map.has(pos):
-			continue
+	var available_positions = []
+	# AI deploys in top 4 rows
+	for y in range(DEPLOYMENT_ROWS):
+		for x in range(columns):
+			available_positions.append(Vector2i(x, y))
+	available_positions.shuffle()
+	var ai_units = [
+		UnitType.FLAG,
+		UnitType.FIVE_STAR,
+		UnitType.FOUR_STAR,
+		UnitType.THREE_STAR,
+		UnitType.COLONEL,
+		UnitType.MAJOR,
+		UnitType.LIEUTENANT,
+		UnitType.SERGEANT,
+		UnitType.SPY,
+		UnitType.SPY,
+		UnitType.TRAPO
+	]
+	for i in range(7):
+		ai_units.append(UnitType.PRIVATE)
+	ai_units.shuffle()
+	for i in range(ai_units.size()):
+		var pos = available_positions[i]
 		var entry = {
-			"type": unit_data["type"],
+			"type": ai_units[i],
 			"uid": next_unit_uid,
 			"owner": GameConstants.Team.AI
 		}
 		next_unit_uid += 1
 		unit_map[pos] = entry
-		tile_map[pos].set_unit(get_unit_texture_for_entry(entry, pos))
+		tile_map[pos].set_unit(
+			get_unit_texture_for_entry(entry, pos)
+		)
 
 func update_fog_of_war():
 	if not game_manager.fog_of_war_enabled():

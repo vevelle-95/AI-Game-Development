@@ -255,6 +255,14 @@ func _on_tile_clicked(pos: Vector2i):
 		return
 
 	var entry = unit_map[src]
+
+	# FRIENDLY FIRE PREVENTION: block movement onto a tile occupied by a friendly unit
+	if unit_map.has(pos):
+		var target_entry = unit_map[pos]
+		if get_entry_owner(entry) == get_entry_owner(target_entry):
+			emit_log("Blocked: Cannot move onto a friendly unit.")
+			return
+
 	var move_range = unit_behavior.get_move_range(unit_type_to_rank(entry.type))
 	var dist = src.distance_to(pos)
 	if dist > move_range:
@@ -475,6 +483,12 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 
 	if unit_map.has(dst):
 		var defender_entry = unit_map[dst]
+
+		# FRIENDLY FIRE PREVENTION: block moves onto tiles occupied by the same team
+		if get_entry_owner(entry) == get_entry_owner(defender_entry):
+			emit_log("Blocked: Cannot move onto a friendly unit.")
+			return
+
 		var defender_rank = unit_type_to_rank(defender_entry.type)
 		var combat_result = arbiter.resolve_combat(attacker_rank, defender_rank)
 		var bounty_awarded := 0

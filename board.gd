@@ -110,19 +110,80 @@ const UNIT_MOVEMENT := {
 	UnitType.PRIVATE: 1
 }
 
-const AI_TEST_LAYOUT := [ 
-	{"pos": Vector2i(0, 0), "type": UnitType.FLAG},
-	{"pos": Vector2i(1, 0), "type": UnitType.FIVE_STAR},
-	{"pos": Vector2i(2, 0), "type": UnitType.FOUR_STAR},
+var ai_start_positions1 = [
+	# --- Row 0 (Backline Formations) ---
+	{"pos": Vector2i(0, 0), "type": UnitType.SPY},
+	{"pos": Vector2i(1, 0), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(2, 0), "type": UnitType.SERGEANT},
 	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
-	{"pos": Vector2i(4, 0), "type": UnitType.COLONEL},
-	{"pos": Vector2i(5, 0), "type": UnitType.MAJOR},
-	{"pos": Vector2i(6, 0), "type": UnitType.LIEUTENANT},
-	{"pos": Vector2i(7, 0), "type": UnitType.SERGEANT},
-	{"pos": Vector2i(8, 0), "type": UnitType.SPY},
+	{"pos": Vector2i(4, 0), "type": UnitType.FIVE_STAR},
+	{"pos": Vector2i(5, 0), "type": UnitType.FLAG},
+	{"pos": Vector2i(6, 0), "type": UnitType.FOUR_STAR},
+	{"pos": Vector2i(7, 0), "type": UnitType.COLONEL},
+	{"pos": Vector2i(8, 0), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(9, 0), "type": UnitType.SPY},
+
+	# --- Row 1 (Midline Formations) ---
 	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
-	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE}
+	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(2, 1), "type": UnitType.MAJOR},
+	{"pos": Vector2i(3, 1), "type": UnitType.LIEUTENANT},
+	{"pos": Vector2i(4, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(5, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(6, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(7, 1), "type": UnitType.PRIVATE}
 ]
+
+var ai_start_positions2 = [
+	{"pos": Vector2i(0, 0), "type": UnitType.SPY},
+	{"pos": Vector2i(1, 0), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(2, 0), "type": UnitType.SERGEANT},
+	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
+	{"pos": Vector2i(5, 0), "type": UnitType.FLAG},
+	{"pos": Vector2i(6, 0), "type": UnitType.FOUR_STAR},
+	{"pos": Vector2i(7, 0), "type": UnitType.COLONEL},
+	{"pos": Vector2i(8, 0), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(9, 0), "type": UnitType.SPY},
+
+	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
+	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(2, 1), "type": UnitType.MAJOR},
+	{"pos": Vector2i(3, 1), "type": UnitType.LIEUTENANT},
+	{"pos": Vector2i(4, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(6, 1), "type": UnitType.PRIVATE},
+
+	# row 2: (Fodder Line with hidden high-value targets)
+	{"pos": Vector2i(3, 2), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(4, 2), "type": UnitType.FIVE_STAR},
+	{"pos": Vector2i(5, 2), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(6, 2), "type": UnitType.SPY}
+]
+
+var ai_start_positions3 = [
+	{"pos": Vector2i(0, 0), "type": UnitType.SPY},
+	{"pos": Vector2i(1, 0), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(2, 0), "type": UnitType.SERGEANT},
+	{"pos": Vector2i(3, 0), "type": UnitType.THREE_STAR},
+	{"pos": Vector2i(4, 0), "type": UnitType.FIVE_STAR},
+	{"pos": Vector2i(5, 0), "type": UnitType.FLAG},
+	{"pos": Vector2i(6, 0), "type": UnitType.FOUR_STAR},
+	{"pos": Vector2i(7, 0), "type": UnitType.COLONEL},
+	{"pos": Vector2i(9, 0), "type": UnitType.SPY},
+
+	{"pos": Vector2i(0, 1), "type": UnitType.TRAPO},
+	{"pos": Vector2i(1, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(2, 1), "type": UnitType.MAJOR},
+	{"pos": Vector2i(3, 1), "type": UnitType.LIEUTENANT},
+	{"pos": Vector2i(4, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(5, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(6, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(7, 1), "type": UnitType.PRIVATE},
+	{"pos": Vector2i(8, 1), "type": UnitType.PRIVATE}
+]
+
+func randomize_ai_positions() -> Array:
+	var presets = [ai_start_positions1, ai_start_positions2, ai_start_positions3]
+	return presets.pick_random()
 
 const TURN_NAMES := {
 	GameManager.PlayTurn.PLAYER1: "PLAYER TURN",
@@ -639,7 +700,7 @@ func get_turn_number() -> int:
 	return turn_number
 
 func setup_ai_enemy():
-	for unit_data in AI_TEST_LAYOUT:
+	for unit_data in randomize_ai_positions():
 		var pos: Vector2i = unit_data["pos"]
 		if not tile_map.has(pos):
 			continue

@@ -110,7 +110,7 @@ const UNIT_MOVEMENT := {
 	UnitType.PRIVATE: 1
 }
 
-const AI_TEST_LAYOUT := [
+const AI_TEST_LAYOUT := [ 
 	{"pos": Vector2i(0, 0), "type": UnitType.FLAG},
 	{"pos": Vector2i(1, 0), "type": UnitType.FIVE_STAR},
 	{"pos": Vector2i(2, 0), "type": UnitType.FOUR_STAR},

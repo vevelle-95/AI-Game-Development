@@ -84,6 +84,16 @@ func setup_game_log():
 	append_log("Game log online.")
 	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
+func _get_tier_label(rank: String) -> String:
+	# Rank is a human string like "Colonel" or "Five-Star General"
+	if rank == null or rank == "":
+		return ""
+	if rank.find("General") >= 0:
+		return "High Tier Official"
+	if rank in ["Colonel", "Major", "Lieutenant"]:
+		return "Mid Tier Official"
+	return "Low Tier Official"
+
 func setup_ready_button():
 	ready_button.text = "READY"
 	ready_button.pressed.connect(_on_ready_button_pressed)
@@ -145,18 +155,23 @@ func append_log(message: String):
 func _on_selected_tile_unit_info(unit_name: String, rank: String, vision: String, movement: String):
 	if unit_name == "":
 		bribe_button.visible = false
+		selected_unit_label.text = "Selected Unit: "
 		reset_stats()
 		return
 
 	if unit_name == "TRAPO":
 		bribe_button.visible = true
-		stats_label.text = "Rank: %s\nVision: %s\nMovement: %s\n\n%s" % [rank, vision, movement, TRAPO_SPECIAL_TEXT]
+		selected_unit_label.text = "Selected Unit: %s" % format_unit_name(unit_name)
+		var tier = _get_tier_label(rank)
+		stats_label.text = "Rank: %s\nTier: %s\nVision: %s\nMovement: %s\n\n%s" % [rank, tier, vision, movement, TRAPO_SPECIAL_TEXT]
 		return
 
 	bribe_button.visible = false
 
+	selected_unit_label.text = "Selected Unit: %s" % format_unit_name(unit_name)
+	var tier = _get_tier_label(rank)
 	var matchup = UNIT_MATCHUP_DETAILS.get(unit_name, {"strong": "Unknown", "weak": "Unknown"})
-	stats_label.text = "Rank: %s\nVision: %s\nMovement: %s\n\nStrong Against: %s\nWeak Against: %s" % [rank, vision, movement, matchup["strong"], matchup["weak"]]
+	stats_label.text = "Rank: %s\nTier: %s\nVision: %s\nMovement: %s\n\nStrong Against: %s\nWeak Against: %s" % [rank, tier, vision, movement, matchup["strong"], matchup["weak"]]
 
 func reset_stats():
 	stats_label.text = "Rank: \nVision: \nMovement: \n\nStrong Against: \nWeak Against: "

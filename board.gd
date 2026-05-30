@@ -39,6 +39,7 @@ var setup_locked := false
 var next_unit_uid := 1
 var moved_uids := []
 var revealed_enemy_tiles := {}
+var revealed_rank_only := {}
 var armed_unit_pos := Vector2i(-1, -1)
 var pickup_entry = null
 var pickup_src_pos := Vector2i(-1, -1)
@@ -397,10 +398,17 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 		emit_log("Bribe failed: not enough credits to reveal the selected enemy unit.")
 		return false
 
+	# Reveal the target's sprite and record rank-only disclosure (do NOT grant the
+	# enemy's vision or clear fog for other tiles).
 	revealed_enemy_tiles[target_pos] = true
-	emit_log("Trapo bribed the selected enemy unit and revealed its identity.")
+	revealed_rank_only[target_pos] = target_rank
+	emit_log("Bribe successful: revealed rank %s for the selected enemy unit." % UNIT_RANK_NAMES.get(target_entry.type, "Unknown"))
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
+	# Refresh fog state so the UI updates correctly (this does NOT grant enemy
+	# vision; it only recomputes visibility from player units and the revealed
+	# tile sprite we set above).
 	update_fog_of_war()
+	# Emit selected info so the right panel updates immediately (rank-only)
 	emit_selected_tile_info(target_pos)
 	return true
 
@@ -421,9 +429,21 @@ func emit_selected_tile_info(pos: Vector2i):
 
 	var entry = unit_map[pos]
 	var unit: UnitType = entry.type
-	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled() and not _is_enemy_revealed_or_visible(pos):
+	# If this is an enemy and fog is enabled, only show details when the tile
+	# was successfully bribed (revealed_rank_only). Do NOT reveal full details
+	# just because the tile sprite is visible on the map.
+	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled():
+		if revealed_rank_only.has(pos):
+			var unit_name = get_unit_name_from_type(unit)
+			var rank = UNIT_RANK_NAMES.get(unit, "Unknown")
+			var rank_value = unit_type_to_rank(unit)
+			var vision = str(game_manager.visible_tiles_for_piece(rank_value))
+			var movement = str(unit_behavior.get_move_range(rank_value))
+			emit_signal("selected_tile_unit_info", unit_name, rank, vision, movement)
+			return
 		emit_signal("selected_tile_unit_info", "", "", "", "")
 		return
+
 	var unit_name = get_unit_name_from_type(unit)
 	var rank = UNIT_RANK_NAMES.get(unit, "Unknown")
 	var rank_value = unit_type_to_rank(unit)
@@ -450,20 +470,21 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		var bounty_unit_name := ""
 
 		if combat_result == Arbiter.CombatResult.ATTACKER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-			bounty_awarded = _maybe_award_bounty(defender_entry, entry)
-			if bounty_awarded > 0:
-				bounty_unit_name = get_unit_name_from_type(defender_entry.type)
-			unit_map.erase(src)
-			_clear_tile_at(src)
-			unit_map.erase(dst)
-			revealed_enemy_tiles.erase(dst)
-			unit_map[dst] = entry
-			tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
-			moved_uids.append(entry.uid)
-			emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
-			if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-				game_manager.game_over = true
-				emit_log("Game over: attacker captured the flag.")
+					bounty_awarded = _maybe_award_bounty(defender_entry, entry)
+					if bounty_awarded > 0:
+						bounty_unit_name = get_unit_name_from_type(defender_entry.type)
+						unit_map.erase(src)
+						_clear_tile_at(src)
+						unit_map.erase(dst)
+						revealed_enemy_tiles.erase(dst)
+						revealed_rank_only.erase(dst)
+						unit_map[dst] = entry
+						tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
+						moved_uids.append(entry.uid)
+						emit_log("Moved %s from (%d, %d) to (%d, %d) and captured %s." % [get_display_name(get_unit_name_from_type(entry.type)), src.x + 1, src.y + 1, dst.x + 1, dst.y + 1, get_display_name(get_unit_name_from_type(defender_entry.type))])
+					if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
+						game_manager.game_over = true
+						emit_log("Game over: attacker captured the flag.")
 		elif combat_result == Arbiter.CombatResult.DEFENDER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
 			bounty_awarded = _maybe_award_bounty(entry, defender_entry)
 			if bounty_awarded > 0:
@@ -500,11 +521,13 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 	unit_map.erase(src)
 	_clear_tile_at(src)
 	revealed_enemy_tiles.erase(src)
+	revealed_rank_only.erase(src)
 
 	# place unit at dst
 	unit_map[dst] = entry
 	var tile_dst = tile_map[dst]
 	revealed_enemy_tiles.erase(dst)
+	revealed_rank_only.erase(dst)
 	tile_dst.set_unit(get_unit_texture_for_entry(entry, dst))
 
 	# mark moved

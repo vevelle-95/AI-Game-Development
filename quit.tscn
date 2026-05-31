@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://cymry4fqlpofy"]
+
+[ext_resource type="Script" path="res://quit.gd" id="1_quit"]
+[ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="2_quitfont"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quitpanel"]
+bg_color = Color(0.6, 0.6, 0.6, 0.92156863)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quitbutton"]
+bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
+expand_margin_top = 2.0
+expand_margin_bottom = 2.0
+
+[node name="Quit" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_quit")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.56078434)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="CenterContainer"]
+custom_minimum_size = Vector2(760, 360)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_quitpanel")
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="PromptLabel" type="Label" parent="CenterContainer/Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_quitfont")
+theme_override_font_sizes/font_size = 68
+text = "Quit the game?"
+horizontal_alignment = 1
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="CenterContainer/Panel/MarginContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_quitfont")
+theme_override_font_sizes/font_size = 54
+theme_override_styles/normal = SubResource("StyleBoxFlat_quitbutton")
+text = "Quit"
+
+[node name="CancelButton" type="Button" parent="CenterContainer/Panel/MarginContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_quitfont")
+theme_override_font_sizes/font_size = 54
+theme_override_styles/normal = SubResource("StyleBoxFlat_quitbutton")
+text = "Cancel"

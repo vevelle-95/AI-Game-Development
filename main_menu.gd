@@ -1,7 +1,9 @@
 extends Control
 
 const SETTINGS_SCENE := preload("res://settings.tscn")
+const QUIT_SCENE := preload("res://quit.tscn")
 var settings_overlay: Control = null
+var quit_overlay: Control = null
 
 func _ready():
 	call_deferred("_connect_buttons")
@@ -55,4 +57,10 @@ func _on_settings_closed():
 
 func _on_QuitButton_pressed():
 	audiomanager.play_click_sfx()
-	get_tree().quit()
+	if quit_overlay != null:
+		return
+
+	quit_overlay = QUIT_SCENE.instantiate()
+	quit_overlay.set_meta("opened_as_overlay", true)
+	quit_overlay.set_meta("confirm_action", "quit_app")
+	add_child(quit_overlay)

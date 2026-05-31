@@ -11,6 +11,7 @@ const DEFEAT_SCENE := preload("res://defeat.tscn")
 @onready var bribe_button = $"UI/VBoxContainer/MiddleArea/RightPanel/BribeButton"
 @onready var selected_unit_label = $"UI/VBoxContainer/MiddleArea/RightPanel/Selected Unit"
 @onready var unit_picker = $"UI/VBoxContainer/MiddleArea/RightPanel/UnitPicker"
+@onready var enemy_units_label = $"UI/VBoxContainer/MiddleArea/RightPanel/EnemyUnits"
 @onready var stats_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/Stats"
 @onready var log_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogScroll/Log"
 @onready var p1_timer_label: Label = $"UI/VBoxContainer/TopBar/Player Timer"
@@ -49,9 +50,13 @@ func _ready():
 	board.phase_changed.connect(_on_board_phase_changed)
 	board.turn_changed.connect(_on_board_turn_changed)
 	board.bounty_changed.connect(_on_board_bounty_changed)
+	board.enemy_units_changed.connect(_on_enemy_units_changed)
 	top_phase_label.text = "GAME OF THE GENERALS"
+	top_phase_label.add_theme_color_override("font_color", Color.WHITE)
 	_update_bounty_label(0, 0)
 	turn_label.text = board.get_current_turn_name()
+	_apply_turn_indicator_colors(board.game_manager.get_turn_color())
+	_on_enemy_units_changed(board.get_enemy_units_captured(), board.get_enemy_units_remaining())
 	pause_button.pressed.connect(_on_pause_button_pressed)
 
 func _on_pause_button_pressed():
@@ -136,14 +141,31 @@ func _on_ready_button_pressed():
 
 func _on_board_phase_changed(phase_name: String):
 	if phase_name == "battle":
-		top_phase_label.text = "BATTLE PHASE"
+		top_phase_label.add_theme_color_override("font_color", Color.WHITE)
 		append_log("Battle phase active. Placement is locked.")
 
-func _on_board_turn_changed(turn_name: String):
+func _on_board_turn_changed(turn_name: String, turn_color: Color):
 	turn_label.text = turn_name
+	_apply_turn_indicator_colors(turn_color)
+
+func _apply_turn_indicator_colors(turn_color: Color):
+	var inactive_color := Color(0.65, 0.65, 0.65)
+	if turn_label:
+		turn_label.add_theme_color_override("font_color", turn_color)
+	if board and board.game_manager:
+		if board.game_manager.current_turn == GameManager.PlayTurn.PLAYER1:
+			p1_timer_label.add_theme_color_override("font_color", turn_color)
+			ai_timer_label.add_theme_color_override("font_color", inactive_color)
+		else:
+			p1_timer_label.add_theme_color_override("font_color", inactive_color)
+			ai_timer_label.add_theme_color_override("font_color", turn_color)
 
 func _on_board_bounty_changed(total_bounty: int, last_bounty: int, _killed_unit_name: String):
 	_update_bounty_label(total_bounty, last_bounty)
+
+func _on_enemy_units_changed(captured: int, remaining: int):
+	if enemy_units_label:
+		enemy_units_label.text = "Enemy Units: %d captured / %d remaining" % [captured, remaining]
 
 func _update_bounty_label(total_bounty: int, last_bounty: int):
 	if last_bounty > 0:

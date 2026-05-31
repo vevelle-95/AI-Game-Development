@@ -5,6 +5,7 @@ signal selected_tile_unit_info(unit_name: String, rank: String, vision: String, 
 signal phase_changed(phase_name: String)
 signal turn_changed(turn_name: String, turn_color: Color)
 signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: String)
+signal enemy_units_changed(captured: int, remaining: int)
 
 var game_manager: GameManager = null
 var unit_behavior: UnitBehavior = null
@@ -50,6 +51,8 @@ var turn_number := 1
 var bribe_mode := false
 var has_moved_this_turn := false # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
 var ai_turn_pending := false # Set true when it becomes the AI's turn; processed in _process()
+
+var total_enemy_units := 0
 
 
 # BRIBE SYSTEM: uid -> { "moves_remaining": int, "original_owner": GameConstants.Team }
@@ -163,8 +166,10 @@ func _ready():
 	#  to seed the pool-accounting pass.)
 	_register_all_player_units_with_bayesian()
 	update_fog_of_war()
+	total_enemy_units = _count_units_by_owner(GameConstants.Team.AI)
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	emit_signal("turn_changed", get_current_turn_name(), game_manager.get_turn_color())
+	_emit_enemy_units_changed()
 	emit_log("Setup phase started. Place your units on the bottom %d rows." % DEPLOYMENT_ROWS)
 	# If the random start is the AI's turn, queue it up.
 	if game_manager.current_turn == GameManager.PlayTurn.AI:
@@ -505,6 +510,7 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 	has_moved_this_turn = true
 	armed_unit_pos = Vector2i(-1, -1)
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
+	_emit_enemy_units_changed()
 	update_fog_of_war()
 	emit_selected_tile_info(target_pos)
 	end_turn()
@@ -553,6 +559,7 @@ func _tick_all_bribes_after_player_move() -> void:
 				break
 	if not expired_uids.is_empty():
 		update_fog_of_war()
+	_emit_enemy_units_changed()
 
 	# Announce remaining bribe moves for any still-active bribed units.
 	for uid in bribed_units.keys():
@@ -735,6 +742,7 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				_tick_all_bribes_after_player_move()
 		if bounty_awarded > 0:
 			emit_signal("bounty_changed", game_manager.trapo_wallet, bounty_awarded, bounty_unit_name)
+		_emit_enemy_units_changed()
 		update_fog_of_war()
 		return
 
@@ -965,6 +973,31 @@ func unit_type_to_rank(unit: UnitType) -> GameConstants.Rank:
 
 func get_turn_number() -> int:
 	return turn_number
+
+func get_enemy_units_status() -> Array[int]:
+	var remaining: int = _count_units_by_owner(GameConstants.Team.AI)
+	var captured: int = maxi(total_enemy_units - remaining, 0)
+	return [captured, remaining]
+
+func get_enemy_units_captured() -> int:
+	var remaining: int = _count_units_by_owner(GameConstants.Team.AI)
+	return maxi(total_enemy_units - remaining, 0)
+
+func get_enemy_units_remaining() -> int:
+	return _count_units_by_owner(GameConstants.Team.AI)
+
+func _count_units_by_owner(owner: GameConstants.Team) -> int:
+	var count := 0
+	for pos in unit_map.keys():
+		var entry = unit_map[pos]
+		if typeof(entry) == TYPE_DICTIONARY and get_entry_owner(entry) == owner:
+			count += 1
+	return count
+
+func _emit_enemy_units_changed() -> void:
+	var remaining: int = _count_units_by_owner(GameConstants.Team.AI)
+	var captured: int = maxi(total_enemy_units - remaining, 0)
+	emit_signal("enemy_units_changed", captured, remaining)
 
 #yung naunang code before yung randomized smth
 #func setup_ai_enemy():

@@ -276,8 +276,6 @@ offset_left = 0.0
 offset_top = -2.0
 offset_right = 2.0
 offset_bottom = -2.0
-columns = null
-rows = null
 
 [node name="RightPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=67974028]
 custom_minimum_size = Vector2(356, 0)
@@ -327,12 +325,22 @@ theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_7a4el")
 text = "BRIBE"
 
+[node name="EnemyUnits" type="Label" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=900000030]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 494.0
+offset_right = 345.0
+offset_bottom = 512.0
+theme_override_fonts/font = ExtResource("2_7a4el")
+theme_override_font_sizes/font_size = 18
+text = "Enemy Units: 0 captured / 0 remaining"
+
 [node name="Stats" type="RichTextLabel" parent="UI/VBoxContainer/MiddleArea/RightPanel" unique_id=323194217]
 layout_mode = 0
 offset_left = 13.0
-offset_top = 185.0
+offset_top = 193.0
 offset_right = 339.0
-offset_bottom = 518.0
+offset_bottom = 477.0
 theme_override_fonts/normal_font = ExtResource("2_7a4el")
 theme_override_fonts/bold_font = ExtResource("2_7a4el")
 theme_override_fonts/bold_italics_font = ExtResource("2_7a4el")
@@ -496,3 +504,7 @@ texture = ExtResource("7_0osx7")
 expand_mode = 1
 
 [node name="PauseMenu" parent="UI" unique_id=837684706 instance=ExtResource("8_pause")]
+offset_left = 2.0
+offset_top = -5.0
+offset_right = 2.0
+offset_bottom = -5.0

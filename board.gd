@@ -9,6 +9,7 @@ signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: Str
 @onready var game_manager: GameManager = GameManager.new()
 @onready var unit_behavior: UnitBehavior = UnitBehavior.new()
 @onready var arbiter: Arbiter = Arbiter.new()
+@onready var bayesian: Bayesian = Bayesian.new()
 
 @export var tile_scene: PackedScene
 @export var columns := 10
@@ -47,6 +48,7 @@ var pickup_src_pos := Vector2i(-1, -1)
 var turn_number := 1
 var bribe_mode := false
 var has_moved_this_turn := false  # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
+
 
 # BRIBE SYSTEM: uid -> { "moves_remaining": int, "original_owner": GameConstants.Team }
 # While a unit is in this dict, it is temporarily controlled by the bribing team.
@@ -144,6 +146,8 @@ func _ready():
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	emit_signal("turn_changed", get_current_turn_name())
 	emit_log("Setup phase started. Place your units on the bottom %d rows." % DEPLOYMENT_ROWS)
+	add_child(bayesian)
+	bayesian.initialise(self, arbiter, unit_behavior)
 
 func initialize_counts():
 	for unit_name in UNIT_ORDER:

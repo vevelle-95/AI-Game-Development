@@ -264,6 +264,8 @@ offset_left = 0.0
 offset_top = -2.0
 offset_right = 2.0
 offset_bottom = -2.0
+columns = null
+rows = null
 
 [node name="RightPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=67974028]
 custom_minimum_size = Vector2(356, 0)

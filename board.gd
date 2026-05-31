@@ -501,9 +501,13 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 		BRIBE_MOVE_DURATION,
 		game_manager.trapo_wallet
 	])
+	_tick_all_bribes_after_player_move()
+	has_moved_this_turn = true
+	armed_unit_pos = Vector2i(-1, -1)
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	update_fog_of_war()
 	emit_selected_tile_info(target_pos)
+	end_turn()
 	return true
 
 # Returns a human-readable label showing remaining bribe moves, or "" if not bribed.

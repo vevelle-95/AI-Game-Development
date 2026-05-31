@@ -1003,8 +1003,17 @@ func get_unit_texture_for_entry(entry, pos: Vector2i = Vector2i(-1, -1)) -> Stri
 	# Bribed units are temporarily owned by PLAYER — show their real sprite so the
 	# player knows what they control. Once the bribe expires and owner reverts to AI,
 	# this path is no longer taken and they fall back into fog normally.
+	#
+	# BUG FIX: Previously used _is_enemy_revealed_or_visible(pos) which returns true
+	# for any tile within player line-of-sight, causing the real AI unit sprite to be
+	# set whenever the AI moved onto a visible tile. The real rank graphic would then
+	# show through the lifted fog overlay — a "random reveal at a random time".
+	# Now we check ONLY revealed_enemy_tiles (set exclusively on a successful player bribe).
+	# Player line-of-sight still lifts the fog overlay so the player sees Enemy.png
+	# (they know something is there) but the true rank sprite is never shown unless the
+	# unit was explicitly bribed.
 	if get_entry_owner(entry) == GameConstants.Team.AI and game_manager.fog_of_war_enabled():
-		if pos == Vector2i(-1, -1) or not _is_enemy_revealed_or_visible(pos):
+		if pos == Vector2i(-1, -1) or not revealed_enemy_tiles.has(pos):
 			return "res://assets/units/Enemy.png"
 	return get_unit_texture(entry.type)
 

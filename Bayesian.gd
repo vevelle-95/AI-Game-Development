@@ -477,22 +477,46 @@ func _evaluate_bribe(
 		if dist > UnitBehavior.CORRUPT_RANGE:
 			continue
 
-		var target_rank: GameConstants.Rank = _board.unit_type_to_rank(pu.entry.type)
-		if not _unit_behavior.can_corrupt(trapo_pos, target_pos, target_rank):
+		# BUG FIX: The original code used _board.unit_type_to_rank(pu.entry.type) which
+		# reads the player's true rank directly from unit_map — a hard fog-of-war violation.
+		# The AI's Trapo was effectively omniscient when choosing bribe targets.
+		# We now use map_rank(uid): the Bayesian MAP estimate (confirmed rank if known,
+		# otherwise the argmax of the belief distribution). This mirrors how every other
+		# part of the decision engine handles player units.
+		register_player_unit(uid)
+		var estimated_rank: GameConstants.Rank = map_rank(uid)
+
+		# Skip if the AI believes this unit is the Flag (cannot bribe Flag).
+		if estimated_rank == GameConstants.Rank.FLAG:
 			continue
 
-		var bribe_cost = _unit_behavior.get_corrupt_cost(target_rank)
-		if ai_wallet < bribe_cost:
+		# Range / legality check uses the estimated rank.
+		if not _unit_behavior.can_corrupt(trapo_pos, target_pos, estimated_rank):
 			continue
 
-		# Expected utility of bribing = E[value of controlling the unit for BRIBE_MOVE_DURATION turns]
-		# Simplified: higher-rank units are more valuable to control
-		var rank_value := float(target_rank as int)
-		if target_rank == GameConstants.Rank.FLAG:
-			continue  # cannot bribe FLAG
+		# Wallet check: use the estimated bribe cost so the AI doesn't overspend.
+		var estimated_cost: int = _unit_behavior.get_corrupt_cost(estimated_rank)
+		if ai_wallet < estimated_cost:
+			continue
 
-		var eu = rank_value * BRIBE_BONUS - float(bribe_cost) * 0.02
-		# Extra value if the unit is confirmed high-value
+		# Compute expected utility by integrating over the full belief distribution,
+		# consistent with how _score_combat_move works elsewhere in this class.
+		var eu := 0.0
+		var belief_dist: Dictionary = rank_distribution(uid)
+		for r in belief_dist.keys():
+			var p: float = belief_dist[r]
+			if p <= 0.0:
+				continue
+			var r_rank: GameConstants.Rank = r as GameConstants.Rank
+			if r_rank == GameConstants.Rank.FLAG:
+				continue  # Flag is never bribable; skip its probability mass
+			var rv: float = float(r_rank as int)
+			var bc: int   = _unit_behavior.get_corrupt_cost(r_rank)
+			# Only count this rank if the wallet would actually cover it.
+			if ai_wallet >= bc:
+				eu += p * (rv * BRIBE_BONUS - float(bc) * 0.02)
+
+		# Extra value if the unit is confirmed high-value through legitimate evidence.
 		if confirmed.has(uid) and _unit_behavior.is_high_value(confirmed[uid]):
 			eu += WIN_VALUE
 

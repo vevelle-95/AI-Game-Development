@@ -7,12 +7,12 @@ class_name AI_Controller
 # =============================================================================
 
 # ── Tunable parameters ────────────────────────────────────────────────────────
-const NUM_DETERMINISATIONS : int   = 20
-const MCTS_ITERATIONS      : int   = 150
-const MAX_ROLLOUT_DEPTH    : int   = 12
-const UCB_C                : float = 1.414
+const NUM_DETERMINISATIONS : int   = 40
+const MCTS_ITERATIONS      : int   = 500
+const MAX_ROLLOUT_DEPTH    : int   = 20
+const UCB_C                : float = 1.00
 const GAMMA                : float = 0.95
-const TIME_LIMIT_SEC       : float = 5.0
+const TIME_LIMIT_SEC       : float = 10.0
 
 # ── Reward constants ──────────────────────────────────────────────────────────
 const R_WIN_FLAG   : float =  1000.0

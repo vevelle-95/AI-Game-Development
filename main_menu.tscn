@@ -52,7 +52,8 @@ layout_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_7vrkn")
 theme_override_font_sizes/font_size = 109
-text = "GAME OF THE GENERALS"
+text = "GAME OF THE GENERALS
+"
 horizontal_alignment = 1
 
 [node name="MainMenu_Center_VBox#PlayButton" type="Button" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=628309059]
@@ -75,5 +76,18 @@ theme_override_fonts/font = ExtResource("2_7vrkn")
 theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
 text = "Quit"
+
+[node name="Label" type="Label" parent="." unique_id=992804574]
+layout_mode = 0
+offset_left = 770.0
+offset_top = 420.0
+offset_right = 1097.0
+offset_bottom = 485.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.7058824)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_7vrkn")
+theme_override_font_sizes/font_size = 68
+text = "reimagined"
+horizontal_alignment = 1
 
 [connection signal="pressed" from="MainMenu#Center/MainMenu_Center#VBox/MainMenu_Center_VBox#PlayButton" to="." method="_on_main_menu_center_v_box_play_button_pressed"]

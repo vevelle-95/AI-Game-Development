@@ -21,6 +21,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_pause")
 
+[node name="ColorRect" type="ColorRect" parent="." unique_id=476078914]
+layout_mode = 0
+offset_left = 645.0
+offset_top = 353.0
+offset_right = 1275.0
+offset_bottom = 726.0
+color = Color(0.8392157, 0.8392157, 0.8392157, 0.45490196)
+
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=2071190180]
 layout_mode = 1
 anchors_preset = 15

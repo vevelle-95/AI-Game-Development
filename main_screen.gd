@@ -12,6 +12,8 @@ extends Node2D
 @onready var log_label: RichTextLabel = $"UI/VBoxContainer/MiddleArea/RightPanel/LogPanel/LogScroll/Log"
 @onready var p1_timer_label: Label = $"UI/VBoxContainer/TopBar/Player Timer"
 @onready var ai_timer_label: Label = $"UI/VBoxContainer/TopBar/AI Timer"
+@onready var pause_menu = $"UI/PauseMenu"
+@onready var pause_button = $"UI/VBoxContainer/TopBar/PauseButton"
 
 const MAX_LOG_LINES := 300
 var log_lines: Array[String] = []
@@ -45,6 +47,10 @@ func _ready():
 	top_phase_label.text = "GAME OF THE GENERALS"
 	_update_bounty_label(0, 0)
 	turn_label.text = board.get_current_turn_name()
+	pause_button.pressed.connect(_on_pause_button_pressed)
+
+func _on_pause_button_pressed():
+	pause_menu.pause_game()
 
 
 func setup_unit_picker():

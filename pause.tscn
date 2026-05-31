@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bum52f5i3qkyl"]
 
 [ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="1_45vjg"]
+[ext_resource type="Script" uid="uid://doir11p80m02v" path="res://pause.gd" id="2_pause"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aq7p1"]
 bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
@@ -8,6 +9,8 @@ expand_margin_top = 2.0
 expand_margin_bottom = 2.0
 
 [node name="Pause" type="Control" unique_id=407430115]
+script = ExtResource("2_pause")
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,51 +18,58 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1752463706]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="TextureRect" type="TextureRect" parent="." unique_id=560562163]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=2071190180]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Panel" type="Panel" parent="CenterContainer" unique_id=634024958]
+custom_minimum_size = Vector2(500, 400)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=530614424]
-layout_mode = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=530614424]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
 
-[node name="ResumeButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1812871267]
+[node name="ResumeButton" type="Button" parent="CenterContainer/Panel/VBoxContainer" unique_id=1812871267]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_45vjg")
 theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
 text = "Resume"
 
-[node name="RestartButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=433033220]
+[node name="RestartButton" type="Button" parent="CenterContainer/Panel/VBoxContainer" unique_id=433033220]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_45vjg")
 theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
 text = "Restart"
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1560912846]
+[node name="SettingsButton" type="Button" parent="CenterContainer/Panel/VBoxContainer" unique_id=1560912846]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_45vjg")
 theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
 text = "Settings"
 
-[node name="ReturnButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1103989779]
+[node name="ReturnButton" type="Button" parent="CenterContainer/Panel/VBoxContainer" unique_id=1103989779]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_45vjg")
 theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
 text = "Return to Main Menu"
+
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/VBoxContainer/ReturnButton" to="." method="_on_menu_button_pressed"]

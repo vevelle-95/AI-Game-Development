@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bx6ui2y15j7c" path="res://assets/texture/m-001.jpg" id="5_sjiej"]
 [ext_resource type="Texture2D" uid="uid://b5s611bqsuurq" path="res://assets/texture/m-007.jpg" id="6_4sv2p"]
 [ext_resource type="Texture2D" uid="uid://b1w4anisa0ov2" path="res://assets/texture/m-009.jpg" id="7_0osx7"]
+[ext_resource type="PackedScene" uid="uid://bum52f5i3qkyl" path="res://pause.tscn" id="8_pause"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w0p2i"]
 bg_color = Color(0.16470589, 0.2, 0.14117648, 1)
@@ -264,6 +265,8 @@ offset_left = 0.0
 offset_top = -2.0
 offset_right = 2.0
 offset_bottom = -2.0
+columns = null
+rows = null
 
 [node name="RightPanel" type="Panel" parent="UI/VBoxContainer/MiddleArea" unique_id=67974028]
 custom_minimum_size = Vector2(356, 0)
@@ -480,3 +483,16 @@ offset_right = 1432.0
 offset_bottom = 958.0
 texture = ExtResource("7_0osx7")
 expand_mode = 1
+
+[node name="PauseButton" type="Button" parent="UI/VBoxContainer/TopBar" unique_id=900000099]
+layout_mode = 0
+offset_left = 1310.0
+offset_top = 7.0
+offset_right = 1565.0
+offset_bottom = 48.0
+theme_override_fonts/font = ExtResource("2_7a4el")
+theme_override_font_sizes/font_size = 29
+theme_override_styles/normal = SubResource("StyleBoxFlat_7a4el")
+text = "PAUSE"
+
+[node name="PauseMenu" parent="UI" instance=ExtResource("8_pause")]

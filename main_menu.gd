@@ -55,6 +55,9 @@ func _on_SettingsButton_pressed():
 func _on_settings_closed():
 	settings_overlay = null
 
+func _on_quit_closed():
+	quit_overlay = null
+
 func _on_QuitButton_pressed():
 	audiomanager.play_click_sfx()
 	if quit_overlay != null:

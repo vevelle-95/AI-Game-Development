@@ -7,19 +7,19 @@ class_name AI_Controller
 # =============================================================================
 
 # ── Tunable parameters ────────────────────────────────────────────────────────
-const NUM_DETERMINISATIONS : int   = 40
-const MCTS_ITERATIONS      : int   = 500
+const NUM_DETERMINISATIONS : int   = 100
+const MCTS_ITERATIONS      : int   = 1500
 const MAX_ROLLOUT_DEPTH    : int   = 20
 const UCB_C                : float = 1.00
 const GAMMA                : float = 0.95
-const TIME_LIMIT_SEC       : float = 10.0
+const TIME_LIMIT_SEC       : float = 15.0
 
 # ── Reward constants ──────────────────────────────────────────────────────────
 const R_WIN_FLAG   : float =  1000.0
-const R_WIN_UNIT   : float =    10.0
-const R_LOSE_UNIT  : float =    -8.0
+const R_WIN_UNIT   : float =    15.0
+const R_LOSE_UNIT  : float =    -4.0
 const R_TIE        : float =    -1.0
-const R_ADVANCE    : float =     0.4
+const R_ADVANCE    : float =     1.5
 const R_BRIBE_BASE : float =     6.0
 
 # ── Unit pool (mirrors Bayesian.UNIT_POOL_COUNTS) ─────────────────────────────
@@ -401,7 +401,7 @@ func _rollout_policy(actions: Array, world: Dictionary) -> Dictionary:
 			combat.append(ad)
 		else:
 			other.append(ad)
-	if not combat.is_empty() and randf() < 0.6:
+	if not combat.is_empty() and randf() < 0.85:
 		return combat[randi() % int(combat.size())]
 	if not other.is_empty():
 		return other[randi() % int(other.size())]

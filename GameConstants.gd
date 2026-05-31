@@ -26,8 +26,8 @@ const BOUNTIES = {
 	Rank.GENERAL_3: 70,
 	Rank.GENERAL_4: 70,
 	Rank.GENERAL_5: 70,
-	Rank.SPY: 25,
-	Rank.TRAPO: 35
+	Rank.SPY: 45,
+	Rank.TRAPO: 55
 }
 
 const BRIBE_COSTS = {
@@ -40,7 +40,6 @@ const BRIBE_COSTS = {
 	Rank.GENERAL_4: 175,
 	Rank.GENERAL_5: 200,
 	Rank.SPY: 80,
-	Rank.TRAPO: 120
 }
 
 static func get_vision_range(rank: Rank) -> int:

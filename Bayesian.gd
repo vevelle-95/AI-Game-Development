@@ -64,12 +64,12 @@ class_name Bayesian
 #
 # =============================================================================
 
-const WIN_VALUE    := 10.0
+const WIN_VALUE    := 15.0
 const FLAG_VALUE   := 1000.0
-const LOSS_RISK    := -8.0
+const LOSS_RISK    := -4.0
 const TIE_VALUE    := -1.0
-const POSITIONAL   := 0.5
-const EXPOSURE_PEN := -3.0
+const POSITIONAL   := 1.5
+const EXPOSURE_PEN := 0.0
 const BRIBE_BONUS  := 5.0
 
 # Probability thresholds
@@ -448,6 +448,12 @@ func _score_positional_move(
 	# Generals: cautious advance, avoid frontlines alone
 	if _unit_behavior.is_general(ai_rank):
 		score += EXPOSURE_PEN * _enemy_threat_density(dst) * 0.5
+
+	# High-value units (Generals + Colonel) get a small bonus for stepping back
+	# when threatened — prevents them from blindly marching into danger.
+	if _unit_behavior.is_general(ai_rank) or ai_rank == GameConstants.Rank.COLONEL:
+		if dst.y < src.y:
+			score += 1.0
 
 	# Penalty for exposing the top of board (flag cluster defense)
 	if dst.y < 2:

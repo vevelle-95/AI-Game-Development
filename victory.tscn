@@ -1,3 +1,102 @@
 [gd_scene format=3 uid="uid://cp6vyaopdu21r"]
 
+[ext_resource type="Script" uid="uid://c1081jk1umn4x" path="res://victory.gd" id="1_jkq4g"]
+[ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="2_v31sk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qxv6a"]
+bg_color = Color(0.11764706, 0.18039216, 0.10980392, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8, 0.74509805, 0.4862745, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_9q7wa"]
+bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="Victory" type="Node2D" unique_id=1751474052]
+script = ExtResource("1_jkq4g")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1890359502]
+
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=2132063014]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="CanvasLayer/Control" unique_id=1493885448]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03529412, 0.08627451, 0.043137256, 0.5568628)
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/Control" unique_id=1991707400]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="CanvasLayer/Control/CenterContainer" unique_id=1861678640]
+custom_minimum_size = Vector2(520, 320)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_qxv6a")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/CenterContainer/Panel" unique_id=424345952]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -110.0
+offset_right = 200.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=1713887194]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_v31sk")
+theme_override_font_sizes/font_size = 108
+text = "VICTORY"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=801481324]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_v31sk")
+theme_override_font_sizes/font_size = 36
+text = "Mission complete."
+horizontal_alignment = 1
+
+[node name="TryAgainButton" type="Button" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=1478835419]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_v31sk")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_9q7wa")
+text = "Try Again"
+
+[node name="MainMenuButton" type="Button" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=616220357]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_v31sk")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_9q7wa")
+text = "Main Menu"

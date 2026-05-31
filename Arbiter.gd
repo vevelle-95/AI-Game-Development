@@ -29,18 +29,12 @@ func resolve_combat(attacker_rank: GameConstants.Rank, defender_rank: GameConsta
 		return CombatResult.ATTACKER_WINS
 	if attacker_rank == GameConstants.Rank.SPY and defender_rank == GameConstants.Rank.PRIVATE:
 		return CombatResult.DEFENDER_WINS
-		
-	# 4. SPY vs OFFICERS & GENERALS
-	var is_defender_general = defender_rank in [GameConstants.Rank.GENERAL_3, GameConstants.Rank.GENERAL_4, GameConstants.Rank.GENERAL_5]
-	
-	if attacker_rank == GameConstants.Rank.SPY and is_defender_general:
+
+	# 4. SPY VS EVERYONE ELSE
+	if attacker_rank == GameConstants.Rank.SPY:
 		return CombatResult.ATTACKER_WINS
-	elif attacker_rank == GameConstants.Rank.SPY and defender_rank >= GameConstants.Rank.SERGEANT:
-		# Spy also defeats standard officers when attacking
-		return CombatResult.ATTACKER_WINS
-	elif defender_rank == GameConstants.Rank.SPY and attacker_rank >= GameConstants.Rank.SERGEANT:
-		# If the Spy is DEFENDING against an officer/general, the attacker wins
-		return CombatResult.ATTACKER_WINS
+	if defender_rank == GameConstants.Rank.SPY:
+		return CombatResult.DEFENDER_WINS
 
 	# 5. TRAPO COMBAT CONDITIONS
 	if attacker_rank == GameConstants.Rank.TRAPO:

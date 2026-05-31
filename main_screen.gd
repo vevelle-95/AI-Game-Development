@@ -1,5 +1,8 @@
 extends Node2D
 
+const VICTORY_SCENE := preload("res://victory.tscn")
+const DEFEAT_SCENE := preload("res://defeat.tscn")
+
 @onready var board = $"UI/VBoxContainer/MiddleArea/BoardPanel/BoardRoot"
 @onready var top_phase_label = $"UI/VBoxContainer/TopBar/Player Turn"
 @onready var bounty_label = $"UI/VBoxContainer/TopBar/Credits"
@@ -17,6 +20,8 @@ extends Node2D
 
 const MAX_LOG_LINES := 300
 var log_lines: Array[String] = []
+var _result_screen_shown := false
+var _result_overlay: Node = null
 
 const UNIT_MATCHUP_DETAILS := {
 	"FLAG": {"strong": "None", "weak": "All enemy units"},
@@ -122,12 +127,12 @@ func _on_bribe_button_pressed():
 
 func _on_ready_button_pressed():
 	if board.lock_setup_phase():
-		# switch button to End Turn mode
-		ready_button.text = "END TURN"
+		# switch the setup button into the in-game pause button
+		ready_button.text = "PAUSE"
 		unit_picker.disabled = true
-		# reconnect to end-turn handler
+		pause_button.visible = false
 		ready_button.pressed.disconnect(_on_ready_button_pressed)
-		ready_button.pressed.connect(_on_end_turn_pressed)
+		ready_button.pressed.connect(_on_pause_button_pressed)
 
 func _on_board_phase_changed(phase_name: String):
 	if phase_name == "battle":
@@ -137,7 +142,7 @@ func _on_board_phase_changed(phase_name: String):
 func _on_board_turn_changed(turn_name: String):
 	turn_label.text = turn_name
 
-func _on_board_bounty_changed(total_bounty: int, last_bounty: int):
+func _on_board_bounty_changed(total_bounty: int, last_bounty: int, _killed_unit_name: String):
 	_update_bounty_label(total_bounty, last_bounty)
 
 func _update_bounty_label(total_bounty: int, last_bounty: int):
@@ -199,6 +204,10 @@ func _process(delta: float) -> void:
 	# Ensure the board and game manager instances exist before pulling data
 	if board and board.game_manager:
 		var gm = board.game_manager
+
+		if gm.game_over and not _result_screen_shown:
+			_show_game_result(gm)
+			return
 		
 		# 1. Update Player 1 Timer UI
 		if p1_timer_label:
@@ -219,3 +228,11 @@ func _process(delta: float) -> void:
 				ai_timer_label.text = "AI: %02d:%02d" % [ai_mins, ai_secs]
 			else:
 				ai_timer_label.text = "AI: TIME'S UP!"
+
+func _show_game_result(gm: GameManager) -> void:
+	_result_screen_shown = true
+	var result_scene: PackedScene = VICTORY_SCENE if gm.game_result == GameManager.GameResult.PLAYER_WIN else DEFEAT_SCENE
+	_result_overlay = result_scene.instantiate()
+	_result_overlay.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	add_child(_result_overlay)
+	get_tree().paused = true

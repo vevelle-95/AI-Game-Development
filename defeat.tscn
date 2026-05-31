@@ -1,3 +1,102 @@
 [gd_scene format=3 uid="uid://djwwe2asoaq05"]
 
+[ext_resource type="Script" uid="uid://bmpstph3wxnpm" path="res://defeat.gd" id="1_hssla"]
+[ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="2_frb4q"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7gvx1"]
+bg_color = Color(0.17254902, 0.07450981, 0.07450981, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8, 0.74509805, 0.4862745, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_emlly"]
+bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="Defeat" type="Node2D" unique_id=1796490911]
+script = ExtResource("1_hssla")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1118378835]
+
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=969826003]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="CanvasLayer/Control" unique_id=1216933836]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08627451, 0.02745098, 0.02745098, 0.5568628)
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/Control" unique_id=1228192196]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="CanvasLayer/Control/CenterContainer" unique_id=1611282878]
+custom_minimum_size = Vector2(520, 320)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7gvx1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/CenterContainer/Panel" unique_id=392640378]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -110.0
+offset_right = 200.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=1354899007]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_frb4q")
+theme_override_font_sizes/font_size = 108
+text = "DEFEAT"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=831863890]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_frb4q")
+theme_override_font_sizes/font_size = 36
+text = "Regroup and try again."
+horizontal_alignment = 1
+
+[node name="TryAgainButton" type="Button" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=1964841787]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_frb4q")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_emlly")
+text = "Try Again"
+
+[node name="MainMenuButton" type="Button" parent="CanvasLayer/Control/CenterContainer/Panel/VBoxContainer" unique_id=861902663]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_frb4q")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_emlly")
+text = "Main Menu"

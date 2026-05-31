@@ -6,8 +6,15 @@ enum PlayTurn {
 	AI
 }
 
-var current_turn: PlayTurn = PlayTurn.PLAYER1 #randomly select starting player in _ready()
+enum GameResult {
+	NONE,
+	PLAYER_WIN,
+	AI_WIN
+}
+
+var current_turn: PlayTurn = PlayTurn.PLAYER1 # randomly select starting player in _ready()
 var game_over: bool = false
+var game_result: GameResult = GameResult.NONE
 var trapo_wallet: int = 0 # TRAPO starts with 0 bribe money
 
 # --- NEW VARIABLES ADDED FOR TIMER TRACKING ---
@@ -22,7 +29,7 @@ func _ready() -> void:
 func randomize() -> void:
 	# PlayTurn.values() returns [0, 1]. pick_random() selects one.
 	current_turn = PlayTurn.values().pick_random() as PlayTurn # Randomly select starting player
-	print("DEBUG: Starting turn is ", "PLAYER1" if current_turn == PlayTurn.PLAYER1 else "AI") 
+	print("DEBUG: Starting turn is ", "PLAYER1" if current_turn == PlayTurn.PLAYER1 else "AI")
 
 # --- NEW PROCESSING LOOP TO TICK DOWN TIMERS ---
 func _process(delta: float) -> void:
@@ -35,12 +42,14 @@ func _process(delta: float) -> void:
 		if p1_time_remaining <= 0.0:
 			p1_time_remaining = 0.0
 			game_over = true
+			game_result = GameResult.AI_WIN
 			print("GAME OVER: PLAYER1 ran out of time!")
 	else:
 		ai_time_remaining -= delta
 		if ai_time_remaining <= 0.0:
 			ai_time_remaining = 0.0
 			game_over = true
+			game_result = GameResult.PLAYER_WIN
 			print("GAME OVER: AI ran out of time!")
 
 func fog_of_war_enabled() -> bool:
@@ -106,7 +115,7 @@ func timer_for_game() -> int:
 	return 15 * 60 # 15 minutes in seconds
 
 # --- NEW HELPER IMPLEMENTATION ---
-func time_for_turn() -> int: 
+func time_for_turn() -> int:
 	# Returns the current player's remaining time as an integer
 	if current_turn == PlayTurn.PLAYER1:
 		return int(p1_time_remaining)
@@ -116,6 +125,6 @@ func time_for_turn() -> int:
 # QOL: Returns the display color for the current turn indicator
 func get_turn_color() -> Color:
 	if current_turn == PlayTurn.PLAYER1:
-		return Color(0.3, 0.85, 0.4)   # Green for player turn
+		return Color(0.3, 0.85, 0.4) # Green for player turn
 	else:
-		return Color(0.85, 0.3, 0.3)   # Red for AI turn
+		return Color(0.85, 0.3, 0.3) # Red for AI turn

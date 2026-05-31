@@ -48,8 +48,8 @@ var pickup_entry = null
 var pickup_src_pos := Vector2i(-1, -1)
 var turn_number := 1
 var bribe_mode := false
-var has_moved_this_turn := false  # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
-var ai_turn_pending := false      # Set true when it becomes the AI's turn; processed in _process()
+var has_moved_this_turn := false # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
+var ai_turn_pending := false # Set true when it becomes the AI's turn; processed in _process()
 
 
 # BRIBE SYSTEM: uid -> { "moves_remaining": int, "original_owner": GameConstants.Team }
@@ -154,7 +154,7 @@ func _ready():
 	setup_ai_enemy()
 	add_child(game_manager)
 	add_child(bayesian)
-	bayesian.initialise(self, arbiter, unit_behavior)
+	bayesian.initialise(self , arbiter, unit_behavior)
 	add_child(ai_controller)
 	ai_controller.initialise(bayesian, arbiter, unit_behavior, rows, columns)
 
@@ -324,7 +324,7 @@ func _on_tile_clicked(pos: Vector2i):
 
 	# perform move — set has_moved_this_turn AFTER a successful move
 	_move_unit(src, pos)
-	has_moved_this_turn = true  # ONE MOVE PER TURN: lock further movement until end_turn()
+	has_moved_this_turn = true # ONE MOVE PER TURN: lock further movement until end_turn()
 	armed_unit_pos = Vector2i(-1, -1)
 	emit_selected_tile_info(pos)
 	# QOL: clear reachable highlights now that the move is done
@@ -518,7 +518,7 @@ func _bribe_moves_label(uid: int) -> String:
 # expires any bribed units whose budget has run out.
 # This is global — any player move (not just the bribed unit) counts toward expiry.
 func _tick_bribe_for_unit(uid: int, current_pos: Vector2i) -> void:
-	pass  # no-op: individual unit ticks are replaced by _tick_all_bribes_after_player_move()
+	pass # no-op: individual unit ticks are replaced by _tick_all_bribes_after_player_move()
 
 func _tick_all_bribes_after_player_move() -> void:
 	# Increment the global player move counter.
@@ -658,6 +658,7 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 					_tick_all_bribes_after_player_move()
 				if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
 					game_manager.game_over = true
+					game_manager.game_result = GameManager.GameResult.PLAYER_WIN if get_entry_owner(entry) == GameConstants.Team.PLAYER else GameManager.GameResult.AI_WIN
 					emit_log("Game over: attacker captured the flag.")
 		elif combat_result == Arbiter.CombatResult.DEFENDER_WINS or combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
 			bounty_awarded = _maybe_award_bounty(entry, defender_entry)
@@ -690,6 +691,7 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				_tick_all_bribes_after_player_move()
 			if combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
 				game_manager.game_over = true
+				game_manager.game_result = GameManager.GameResult.PLAYER_WIN if get_entry_owner(defender_entry) == GameConstants.Team.PLAYER else GameManager.GameResult.AI_WIN
 				emit_log("Game over: defender kept the flag.")
 		elif combat_result == Arbiter.CombatResult.TIE:
 			var attacker_bounty: int = _maybe_award_bounty(defender_entry, entry)
@@ -806,7 +808,7 @@ func end_turn():
 	game_manager.switch_turn()
 	turn_number += 1
 	moved_uids.clear()
-	has_moved_this_turn = false  # ONE MOVE PER TURN: reset so the player can move again next turn
+	has_moved_this_turn = false # ONE MOVE PER TURN: reset so the player can move again next turn
 	armed_unit_pos = Vector2i(-1, -1)
 	bribe_mode = false
 	# QOL: clear any leftover reachable highlights
@@ -977,7 +979,6 @@ func get_turn_number() -> int:
 #		tile_map[pos].set_unit(get_unit_texture_for_entry(entry, pos))
 
 func setup_ai_enemy():
-
 	var ai_units = [
 		UnitType.FIVE_STAR,
 		UnitType.FOUR_STAR,
@@ -1168,7 +1169,6 @@ func get_fog_combat_message(
 	attacker_entry: Dictionary,
 	defender_entry: Dictionary
 ) -> String:
-
 	# Only reveal the name of a unit if it belongs to the PLAYER.
 	# AI unit names/ranks must never appear in the log — show "enemy unit" instead.
 	var player_attacker_name: String = get_display_name(
@@ -1180,7 +1180,6 @@ func get_fog_combat_message(
 	) if not attacker_is_player else "unit"
 
 	match combat_result:
-
 		Arbiter.CombatResult.ATTACKER_WINS:
 			if attacker_is_player:
 				return "Your %s captured an enemy unit." % player_attacker_name

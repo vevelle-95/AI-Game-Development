@@ -3,13 +3,15 @@
 [ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="1_45vjg"]
 [ext_resource type="Script" uid="uid://doir11p80m02v" path="res://pause.gd" id="2_pause"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6eyaj"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aq7p1"]
 bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
 expand_margin_top = 2.0
 expand_margin_bottom = 2.0
 
 [node name="Pause" type="Control" unique_id=407430115]
-script = ExtResource("2_pause")
 process_mode = 3
 layout_mode = 3
 anchors_preset = 15
@@ -17,6 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2_pause")
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=2071190180]
 layout_mode = 1
@@ -29,6 +32,8 @@ grow_vertical = 2
 [node name="Panel" type="Panel" parent="CenterContainer" unique_id=634024958]
 custom_minimum_size = Vector2(500, 400)
 layout_mode = 2
+size_flags_stretch_ratio = 1.61
+theme_override_styles/panel = SubResource("StyleBoxFlat_6eyaj")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=530614424]
 layout_mode = 1

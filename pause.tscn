@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://bum52f5i3qkyl"]
+
+[ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="1_45vjg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aq7p1"]
+bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
+expand_margin_top = 2.0
+expand_margin_bottom = 2.0
+
+[node name="Pause" type="Control" unique_id=407430115]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1752463706]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=560562163]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=2071190180]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Panel" type="Panel" parent="CenterContainer" unique_id=634024958]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=530614424]
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1812871267]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_45vjg")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
+text = "Resume"
+
+[node name="RestartButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=433033220]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_45vjg")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
+text = "Restart"
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1560912846]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_45vjg")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
+text = "Settings"
+
+[node name="ReturnButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1103989779]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_45vjg")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_aq7p1")
+text = "Return to Main Menu"

@@ -1,0 +1,124 @@
+[gd_scene format=3 uid="uid://cetexhn3hl0r3"]
+
+[ext_resource type="Texture2D" uid="uid://cek38ymmxd4gb" path="res://assets/texture/Camouflage.jpg" id="1_nkug2"]
+[ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="1_x2hje"]
+
+[sub_resource type="Theme" id="Theme_jwo76"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x2hje"]
+bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
+expand_margin_top = 2.0
+expand_margin_bottom = 2.0
+
+[node name="Settings" type="Control" unique_id=1859015950]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=164147]
+custom_minimum_size = Vector2(800, 800)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -420.0
+offset_top = -420.0
+offset_right = 380.0
+offset_bottom = 380.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_nkug2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1110700372]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7254902)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1190377358]
+layout_direction = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_jwo76")
+use_top_left = true
+
+[node name="Panel" type="Panel" parent="CenterContainer" unique_id=1804319731]
+custom_minimum_size = Vector2(800, 800)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/Panel" unique_id=535143316]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -54.5
+offset_top = -76.0
+offset_right = 54.5
+offset_bottom = 76.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel/MarginContainer" unique_id=626243655]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=517175854]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_x2hje")
+theme_override_font_sizes/font_size = 109
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="MusicSliderLabel" type="Label" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=568537711]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_x2hje")
+theme_override_font_sizes/font_size = 50
+text = "Music Volume"
+horizontal_alignment = 1
+
+[node name="MusicSlider" type="HSlider" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=374037501]
+layout_mode = 2
+value = 50.0
+
+[node name="SFXSliderLabel" type="Label" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=875965787]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_x2hje")
+theme_override_font_sizes/font_size = 50
+text = "SFX Volume"
+horizontal_alignment = 1
+
+[node name="SFXSlider" type="HSlider" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=483170729]
+layout_mode = 2
+value = 50.0
+
+[node name="BackButton" type="Button" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=2042584230]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_x2hje")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_x2hje")
+text = "Back"

@@ -939,14 +939,8 @@ func get_turn_number() -> int:
 #		tile_map[pos].set_unit(get_unit_texture_for_entry(entry, pos))
 
 func setup_ai_enemy():
-	var available_positions = []
-	# AI deploys in top 4 rows
-	for y in range(DEPLOYMENT_ROWS):
-		for x in range(columns):
-			available_positions.append(Vector2i(x, y))
-	available_positions.shuffle()
+
 	var ai_units = [
-		UnitType.FLAG,
 		UnitType.FIVE_STAR,
 		UnitType.FOUR_STAR,
 		UnitType.THREE_STAR,
@@ -958,8 +952,68 @@ func setup_ai_enemy():
 		UnitType.SPY,
 		UnitType.TRAPO
 	]
+
 	for i in range(7):
 		ai_units.append(UnitType.PRIVATE)
+
+	# Place Flag
+
+	var flag_positions = []
+	# Exclude front row (y = 0)
+	for y in range(1, DEPLOYMENT_ROWS):
+		for x in range(columns):
+			flag_positions.append(Vector2i(x, y))
+	flag_positions.shuffle()
+	var flag_pos = flag_positions[0]
+	var flag_entry = {
+		"type": UnitType.FLAG,
+		"uid": next_unit_uid,
+		"owner": GameConstants.Team.AI
+	}
+	next_unit_uid += 1
+	unit_map[flag_pos] = flag_entry
+	tile_map[flag_pos].set_unit(
+		get_unit_texture_for_entry(flag_entry, flag_pos)
+	)
+	# Place 2 Guards
+	var guard_positions = []
+	var directions = [
+		Vector2i(1, 0),
+		Vector2i(-1, 0),
+		Vector2i(0, 1),
+		Vector2i(0, -1)
+	]
+	for dir in directions:
+		var pos = flag_pos + dir
+		if pos.x >= 0 \
+		and pos.x < columns \
+		and pos.y >= 0 \
+		and pos.y < DEPLOYMENT_ROWS:
+			guard_positions.append(pos)
+	guard_positions.shuffle()
+	var guards_to_place = min(2, guard_positions.size())
+	for i in range(guards_to_place):
+		var guard_pos = guard_positions[i]
+		var guard_entry = {
+			"type": UnitType.PRIVATE,
+			"uid": next_unit_uid,
+			"owner": GameConstants.Team.AI
+		}
+		next_unit_uid += 1
+		unit_map[guard_pos] = guard_entry
+		tile_map[guard_pos].set_unit(
+			get_unit_texture_for_entry(guard_entry, guard_pos)
+		)
+		# remove one private from pool
+		ai_units.erase(UnitType.PRIVATE)
+	# Randomly Place Remaining Units
+	var available_positions = []
+	for y in range(DEPLOYMENT_ROWS):
+		for x in range(columns):
+			var pos = Vector2i(x, y)
+			if not unit_map.has(pos):
+				available_positions.append(pos)
+	available_positions.shuffle()
 	ai_units.shuffle()
 	for i in range(ai_units.size()):
 		var pos = available_positions[i]

@@ -44,6 +44,7 @@ grow_vertical = 2
 
 [node name="MainMenu_Center#VBox" type="VBoxContainer" parent="MainMenu#Center" unique_id=649267860]
 layout_mode = 2
+theme_override_constants/separation = 25
 alignment = 1
 
 [node name="MainMenu_Center_VBox#Title" type="Label" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=223179561]
@@ -60,3 +61,19 @@ theme_override_fonts/font = ExtResource("2_7vrkn")
 theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
 text = "Play Game"
+
+[node name="MainMenu_Center_VBox#Settings" type="Button" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=172033836]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_7vrkn")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
+text = "Settings"
+
+[node name="MainMenu_Center_VBox#Quit" type="Button" parent="MainMenu#Center/MainMenu_Center#VBox" unique_id=758909015]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_7vrkn")
+theme_override_font_sizes/font_size = 62
+theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
+text = "Quit"
+
+[connection signal="pressed" from="MainMenu#Center/MainMenu_Center#VBox/MainMenu_Center_VBox#PlayButton" to="." method="_on_main_menu_center_v_box_play_button_pressed"]

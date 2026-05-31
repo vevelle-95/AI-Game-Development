@@ -51,7 +51,9 @@ func _ready():
 	board.turn_changed.connect(_on_board_turn_changed)
 	board.bounty_changed.connect(_on_board_bounty_changed)
 	board.enemy_units_changed.connect(_on_enemy_units_changed)
-	top_phase_label.text = "GAME OF THE GENERALS"
+	# Start showing the current gameplay phase (setup -> battle)
+	top_phase_label.text = "SETUP PHASE"
+	# Setup phase uses white; battle phase will use the active turn color
 	top_phase_label.add_theme_color_override("font_color", Color.WHITE)
 	_update_bounty_label(0, 0)
 	turn_label.text = board.get_current_turn_name()
@@ -140,18 +142,41 @@ func _on_bribe_button_pressed():
 func _on_ready_button_pressed():
 	audiomanager.play_click_sfx()
 	if board.lock_setup_phase():
+		# Move the pause button to the Ready button's position so it replaces it visually
+		if ready_button != null and pause_button != null:
+			# copy rect_position (local to the shared parent) so pause sits exactly where Ready was
+			pause_button.rect_position = ready_button.rect_position
+
 		ready_button.visible = false
 		unit_picker.disabled = true
 		pause_button.visible = true
 
 func _on_board_phase_changed(phase_name: String):
+	# Update the top label to reflect the current phase
+	top_phase_label.text = "%s PHASE" % phase_name.to_upper()
+
+	# If we're entering battle, color it to the active turn; otherwise keep white
 	if phase_name == "battle":
+		if board and board.game_manager:
+			var turn_color := board.game_manager.get_turn_color()
+			top_phase_label.add_theme_color_override("font_color", turn_color)
+		else:
+			top_phase_label.add_theme_color_override("font_color", Color.WHITE)
+	else:
 		top_phase_label.add_theme_color_override("font_color", Color.WHITE)
-		append_log("Battle phase active. Placement is locked.")
+
+	append_log("%s phase active. Placement is locked." % phase_name.capitalize())
 
 func _on_board_turn_changed(turn_name: String, turn_color: Color):
 	turn_label.text = turn_name
 	_apply_turn_indicator_colors(turn_color)
+
+	# If we're currently in battle, update the top phase label color to match active turn
+	if board and board.setup_locked:
+		top_phase_label.add_theme_color_override("font_color", turn_color)
+	else:
+		# During setup, the phase label remains white
+		top_phase_label.add_theme_color_override("font_color", Color.WHITE)
 
 func _apply_turn_indicator_colors(turn_color: Color):
 	var inactive_color := Color(0.65, 0.65, 0.65)

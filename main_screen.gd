@@ -158,7 +158,7 @@ func _on_board_phase_changed(phase_name: String):
 	# If we're entering battle, color it to the active turn; otherwise keep white
 	if phase_name == "battle":
 		if board and board.game_manager:
-			var turn_color := board.game_manager.get_turn_color()
+			var turn_color: Color = board.game_manager.get_turn_color()
 			top_phase_label.add_theme_color_override("font_color", turn_color)
 		else:
 			top_phase_label.add_theme_color_override("font_color", Color.WHITE)

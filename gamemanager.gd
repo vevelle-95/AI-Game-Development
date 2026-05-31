@@ -112,3 +112,10 @@ func time_for_turn() -> int:
 		return int(p1_time_remaining)
 	else:
 		return int(ai_time_remaining)
+
+# QOL: Returns the display color for the current turn indicator
+func get_turn_color() -> Color:
+	if current_turn == PlayTurn.PLAYER1:
+		return Color(0.3, 0.85, 0.4)   # Green for player turn
+	else:
+		return Color(0.85, 0.3, 0.3)   # Red for AI turn

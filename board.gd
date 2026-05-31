@@ -3,14 +3,14 @@ extends Control
 signal log_message(message: String)
 signal selected_tile_unit_info(unit_name: String, rank: String, vision: String, movement: String)
 signal phase_changed(phase_name: String)
-signal turn_changed(turn_name: String)
+signal turn_changed(turn_name: String, turn_color: Color)
 signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: String)
 
-@onready var game_manager: GameManager = GameManager.new()
-@onready var unit_behavior: UnitBehavior = UnitBehavior.new()
-@onready var arbiter: Arbiter = Arbiter.new()
-@onready var bayesian: Bayesian = Bayesian.new()
-@onready var ai_controller: AI_Controller = AI_Controller.new()
+var game_manager: GameManager = null
+var unit_behavior: UnitBehavior = null
+var arbiter: Arbiter = null
+var bayesian: Bayesian = null
+var ai_controller: AI_Controller = null
 
 @export var tile_scene: PackedScene
 @export var columns := 10
@@ -57,6 +57,10 @@ var ai_turn_pending := false      # Set true when it becomes the AI's turn; proc
 # Each move it makes decrements moves_remaining. When it hits 0, ownership reverts.
 const BRIBE_MOVE_DURATION := 3
 var bribed_units := {}
+
+# QOL: Global player move counter for bribe duration tracking.
+# Bribe duration now counts the next 3 PLAYER moves (any unit), not per-bribed-unit moves.
+var player_move_count := 0
 
 
 # TEMP: what unit you are placing
@@ -140,6 +144,11 @@ const TURN_NAMES := {
 }
 
 func _ready():
+	game_manager = GameManager.new()
+	unit_behavior = UnitBehavior.new()
+	arbiter = Arbiter.new()
+	bayesian = Bayesian.new()
+	ai_controller = AI_Controller.new()
 	initialize_counts()
 	create_board()
 	setup_ai_enemy()
@@ -155,7 +164,7 @@ func _ready():
 	_register_all_player_units_with_bayesian()
 	update_fog_of_war()
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
-	emit_signal("turn_changed", get_current_turn_name())
+	emit_signal("turn_changed", get_current_turn_name(), game_manager.get_turn_color())
 	emit_log("Setup phase started. Place your units on the bottom %d rows." % DEPLOYMENT_ROWS)
 	# If the random start is the AI's turn, queue it up.
 	if game_manager.current_turn == GameManager.PlayTurn.AI:
@@ -265,9 +274,9 @@ func _on_tile_clicked(pos: Vector2i):
 			if get_entry_owner(tapped_entry) != GameConstants.Team.PLAYER:
 				emit_selected_tile_info(pos)
 				return
-			# ONE MOVE PER TURN: block arming if the player already moved this turn
+			# QOL: After touch-move sequence is done, block selecting any other unit.
 			if has_moved_this_turn:
-				emit_log("You already moved a piece this turn. Press 'End Turn'.")
+				emit_log("Move complete. Ending turn automatically…")
 				return
 			if moved_uids.has(tapped_entry.uid):
 				emit_log("Unit already moved this turn.")
@@ -279,6 +288,8 @@ func _on_tile_clicked(pos: Vector2i):
 				_bribe_moves_label(tapped_entry.uid)
 			])
 			emit_selected_tile_info(pos)
+			# QOL: highlight reachable tiles for the armed unit
+			_highlight_reachable_tiles(pos)
 			return
 		else:
 			# nothing to arm
@@ -316,7 +327,11 @@ func _on_tile_clicked(pos: Vector2i):
 	has_moved_this_turn = true  # ONE MOVE PER TURN: lock further movement until end_turn()
 	armed_unit_pos = Vector2i(-1, -1)
 	emit_selected_tile_info(pos)
+	# QOL: clear reachable highlights now that the move is done
+	_clear_reachable_highlights()
 	highlight_tiles()
+	# QOL: auto-advance to AI turn — no manual "End Turn" button needed for player
+	end_turn()
 
 func place_unit(pos: Vector2i):
 	if setup_locked:
@@ -464,9 +479,11 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 	target_entry["owner"] = GameConstants.Team.PLAYER
 	unit_map[target_pos] = target_entry
 
-	# 2. Register the unit in the bribed tracker with its move budget.
+	# 2. Register the unit in the bribed tracker.
+	# QOL: Duration is based on the next BRIBE_MOVE_DURATION PLAYER moves (global),
+	# not moves of the bribed unit specifically.
 	bribed_units[target_entry.uid] = {
-		"moves_remaining": BRIBE_MOVE_DURATION,
+		"expire_at_move": player_move_count + BRIBE_MOVE_DURATION,
 		"original_owner": GameConstants.Team.AI
 	}
 
@@ -480,9 +497,10 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 	# ── BAYESIAN: bribe reveals the exact rank of this unit ──
 	bayesian.update_from_bribe_reveal(target_entry.uid, target_rank)
 
-	emit_log("Bribe successful! %s is now under your control for %d moves." % [
+	emit_log("Bribe successful! %s is now under your control for the next %d player moves. Credits remaining: %d" % [
 		UNIT_RANK_NAMES.get(target_entry.type, "Unknown"),
-		BRIBE_MOVE_DURATION
+		BRIBE_MOVE_DURATION,
+		game_manager.trapo_wallet
 	])
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	update_fog_of_war()
@@ -492,40 +510,51 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 # Returns a human-readable label showing remaining bribe moves, or "" if not bribed.
 func _bribe_moves_label(uid: int) -> String:
 	if bribed_units.has(uid):
-		return " [Bribed: %d move(s) left]" % bribed_units[uid]["moves_remaining"]
+		var remaining: int = bribed_units[uid]["expire_at_move"] - player_move_count
+		return " [Bribed: %d player move(s) left]" % maxi(remaining, 0)
 	return ""
 
-# Called after a bribed unit successfully moves. Decrements its move counter and
-# reverts ownership when the budget is exhausted.
+# QOL: Called after EVERY player move. Decrements the global move counter and
+# expires any bribed units whose budget has run out.
+# This is global — any player move (not just the bribed unit) counts toward expiry.
 func _tick_bribe_for_unit(uid: int, current_pos: Vector2i) -> void:
-	if not bribed_units.has(uid):
-		return
+	pass  # no-op: individual unit ticks are replaced by _tick_all_bribes_after_player_move()
 
-	bribed_units[uid]["moves_remaining"] -= 1
-	var remaining: int = bribed_units[uid]["moves_remaining"]
+func _tick_all_bribes_after_player_move() -> void:
+	# Increment the global player move counter.
+	player_move_count += 1
 
-	if remaining <= 0:
-		# Bribe expired — revert ownership back to the original team.
+	# Check all active bribes and expire any that have reached their limit.
+	var expired_uids: Array = []
+	for uid in bribed_units.keys():
+		var record = bribed_units[uid]
+		if player_move_count >= record["expire_at_move"]:
+			expired_uids.append(uid)
+
+	for uid in expired_uids:
 		var original_owner: GameConstants.Team = bribed_units[uid]["original_owner"]
 		bribed_units.erase(uid)
-		if unit_map.has(current_pos):
-			var entry = unit_map[current_pos]
-			if entry.uid == uid:
+		# Find the unit on the board and revert ownership.
+		for pos in unit_map.keys():
+			var entry = unit_map[pos]
+			if typeof(entry) == TYPE_DICTIONARY and entry.has("uid") and int(entry["uid"]) == uid:
 				entry["owner"] = original_owner
-				unit_map[current_pos] = entry
-				# Remove permanent reveal entries so the unit goes back into fog
-				# once player vision no longer covers its tile.
-				revealed_enemy_tiles.erase(current_pos)
-				revealed_rank_only.erase(current_pos)
-				# Restore the correct sprite for the reverted owner.
-				tile_map[current_pos].set_unit(get_unit_texture_for_entry(entry, current_pos))
+				unit_map[pos] = entry
+				revealed_enemy_tiles.erase(pos)
+				revealed_rank_only.erase(pos)
+				tile_map[pos].set_unit(get_unit_texture_for_entry(entry, pos))
 				var side := "the enemy" if original_owner == GameConstants.Team.AI else "you"
 				emit_log("Bribe expired: %s has returned to %s." % [
 					get_display_name(get_unit_name_from_type(entry.type)), side
 				])
+				break
+	if not expired_uids.is_empty():
 		update_fog_of_war()
-	else:
-		emit_log("Bribed unit has %d move(s) remaining." % remaining)
+
+	# Announce remaining bribe moves for any still-active bribed units.
+	for uid in bribed_units.keys():
+		var remaining: int = bribed_units[uid]["expire_at_move"] - player_move_count
+		emit_log("A bribed unit has %d player move(s) remaining." % maxi(remaining, 0))
 
 func get_display_name(unit_name: String) -> String:
 	var words = unit_name.to_lower().split("_")
@@ -624,8 +653,9 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 						defender_entry
 					)
 				)
-				# Tick bribe counter for the attacker after a successful combat move.
-				_tick_bribe_for_unit(entry.uid, dst)
+				# QOL: tick global bribe counter after a player move
+				if get_entry_owner(entry) == GameConstants.Team.PLAYER:
+					_tick_all_bribes_after_player_move()
 				if combat_result == Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
 					game_manager.game_over = true
 					emit_log("Game over: attacker captured the flag.")
@@ -655,6 +685,9 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 					defender_entry
 				)
 			)
+			# QOL: player attempted a move (even if lost) — tick global bribe counter
+			if get_entry_owner(entry) == GameConstants.Team.PLAYER:
+				_tick_all_bribes_after_player_move()
 			if combat_result == Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
 				game_manager.game_over = true
 				emit_log("Game over: defender kept the flag.")
@@ -692,6 +725,9 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 					defender_entry
 				)
 			)
+			# QOL: player attempted a move (tie) — tick global bribe counter
+			if get_entry_owner(entry) == GameConstants.Team.PLAYER:
+				_tick_all_bribes_after_player_move()
 		if bounty_awarded > 0:
 			emit_signal("bounty_changed", game_manager.trapo_wallet, bounty_awarded, bounty_unit_name)
 		update_fog_of_war()
@@ -731,9 +767,8 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		# Moving away from the AI's half signals avoidance.
 		elif dst.y > src.y:
 			bayesian.update_from_avoidance(entry.uid)
-
-	# Tick the bribe counter for this unit now that it has moved.
-	_tick_bribe_for_unit(entry.uid, dst)
+		# QOL: tick the global bribe counter for any player move (not per-unit)
+		_tick_all_bribes_after_player_move()
 
 	update_fog_of_war()
 
@@ -774,7 +809,9 @@ func end_turn():
 	has_moved_this_turn = false  # ONE MOVE PER TURN: reset so the player can move again next turn
 	armed_unit_pos = Vector2i(-1, -1)
 	bribe_mode = false
-	emit_signal("turn_changed", get_current_turn_name())
+	# QOL: clear any leftover reachable highlights
+	_clear_reachable_highlights()
+	emit_signal("turn_changed", get_current_turn_name(), game_manager.get_turn_color())
 	emit_log("Turn ended. Movement reset.")
 	# Queue the AI turn; it will fire on the next _process frame.
 	if game_manager.current_turn == GameManager.PlayTurn.AI:
@@ -863,8 +900,9 @@ func _apply_ai_decision(decision: Dictionary) -> void:
 				if game_manager.bribe_enemy(target_rank):
 					# Keep owner as PLAYER — the unit is bribed but visually stays
 					# on the player's side (fog rules already apply correctly).
+					# QOL: AI bribes also use global player_move_count for duration.
 					bribed_units[target_entry.uid] = {
-						"moves_remaining": BRIBE_MOVE_DURATION,
+						"expire_at_move": player_move_count + BRIBE_MOVE_DURATION,
 						"original_owner": GameConstants.Team.PLAYER
 					}
 					# Do NOT add to revealed_enemy_tiles — the AI has no business
@@ -1074,6 +1112,28 @@ func get_unit_texture_for_entry(entry, pos: Vector2i = Vector2i(-1, -1)) -> Stri
 func highlight_tiles():
 	for pos in tile_map.keys():
 		tile_map[pos].set_selected(pos == selected_tile)
+
+# QOL: Highlight all tiles the armed unit can legally move to.
+func _highlight_reachable_tiles(src: Vector2i) -> void:
+	_clear_reachable_highlights()
+	if not unit_map.has(src):
+		return
+	var entry = unit_map[src]
+	var rank = unit_type_to_rank(entry.type)
+	var move_range = unit_behavior.get_move_range(rank)
+	for pos in tile_map.keys():
+		var dist = src.distance_to(pos)
+		if dist < 0.01 or dist > move_range:
+			continue
+		# Block tiles occupied by friendlies
+		if unit_map.has(pos) and get_entry_owner(unit_map[pos]) == get_entry_owner(entry):
+			continue
+		tile_map[pos].set_reachable(true)
+
+# QOL: Clear all reachable highlights.
+func _clear_reachable_highlights() -> void:
+	for pos in tile_map.keys():
+		tile_map[pos].set_reachable(false)
 
 
 func get_unit_texture(unit: UnitType) -> String:

@@ -28,6 +28,7 @@ func _on_sfx_slider_value_changed(value):
 	audiomanager.set_sfx_volume(value)
 
 func _on_back_pressed():
+	audiomanager.play_click_sfx()
 	var opened_as_overlay := (has_meta("opened_as_overlay") and bool(get_meta("opened_as_overlay"))) or (has_meta("opened_from_pause") and bool(get_meta("opened_from_pause")))
 	if opened_as_overlay:
 		var parent_node = get_parent()

@@ -36,11 +36,13 @@ func _find_button_by_name_or_text(node, keyword: String, text_match: String):
 	return null
 
 func _on_PlayButton_pressed():
+	audiomanager.play_click_sfx()
 	get_tree().change_scene_to_file(
 		"res://main_screen.tscn"
 	)
 
 func _on_SettingsButton_pressed():
+	audiomanager.play_click_sfx()
 	if settings_overlay != null:
 		return
 
@@ -52,4 +54,5 @@ func _on_settings_closed():
 	settings_overlay = null
 
 func _on_QuitButton_pressed():
+	audiomanager.play_click_sfx()
 	get_tree().quit()

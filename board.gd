@@ -216,6 +216,8 @@ func _process(_delta):
 	grid.custom_minimum_size = Vector2(tile_size * columns, tile_size * rows)
 
 func _on_tile_clicked(pos: Vector2i):
+	audiomanager.play_tile_select_sfx()
+
 	if bribe_mode:
 		bribe_mode = false
 		attempt_bribe(selected_tile, pos)
@@ -654,6 +656,7 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				revealed_rank_only.erase(dst)
 				unit_map[dst] = entry
 				tile_map[dst].set_unit(get_unit_texture_for_entry(entry, dst))
+				audiomanager.play_move_sfx()
 				moved_uids.append(entry.uid)
 				emit_log(
 					get_fog_combat_message(
@@ -757,6 +760,7 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 	revealed_enemy_tiles.erase(dst)
 	revealed_rank_only.erase(dst)
 	tile_dst.set_unit(get_unit_texture_for_entry(entry, dst))
+	audiomanager.play_move_sfx()
 
 	moved_uids.append(entry.uid)
 	# Only reveal the unit name in the log if it belongs to the player.

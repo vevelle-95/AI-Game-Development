@@ -10,9 +10,11 @@ func _ready() -> void:
 		main_menu_button.pressed.connect(_on_main_menu_pressed)
 
 func _on_try_again_pressed() -> void:
+	audiomanager.play_click_sfx()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://main_screen.tscn")
 
 func _on_main_menu_pressed() -> void:
+	audiomanager.play_click_sfx()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://main_menu.tscn")

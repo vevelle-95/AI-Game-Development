@@ -57,9 +57,16 @@ func _ready():
 	turn_label.text = board.get_current_turn_name()
 	_apply_turn_indicator_colors(board.game_manager.get_turn_color())
 	_on_enemy_units_changed(board.get_enemy_units_captured(), board.get_enemy_units_remaining())
+	pause_button.button_down.connect(_on_pause_button_down)
 	pause_button.pressed.connect(_on_pause_button_pressed)
 
+func _on_pause_button_down():
+	audiomanager.play_click_sfx()
+
 func _on_pause_button_pressed():
+	call_deferred("_pause_game_after_click")
+
+func _pause_game_after_click():
 	pause_menu.pause_game()
 
 
@@ -131,13 +138,11 @@ func _on_bribe_button_pressed():
 	board.start_bribe_mode()
 
 func _on_ready_button_pressed():
+	audiomanager.play_click_sfx()
 	if board.lock_setup_phase():
-		# switch the setup button into the in-game pause button
-		ready_button.text = "PAUSE"
+		ready_button.visible = false
 		unit_picker.disabled = true
-		pause_button.visible = false
-		ready_button.pressed.disconnect(_on_ready_button_pressed)
-		ready_button.pressed.connect(_on_pause_button_pressed)
+		pause_button.visible = true
 
 func _on_board_phase_changed(phase_name: String):
 	if phase_name == "battle":

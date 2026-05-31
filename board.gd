@@ -10,6 +10,7 @@ signal bounty_changed(total_bounty: int, last_bounty: int, killed_unit_name: Str
 @onready var unit_behavior: UnitBehavior = UnitBehavior.new()
 @onready var arbiter: Arbiter = Arbiter.new()
 @onready var bayesian: Bayesian = Bayesian.new()
+@onready var ai_controller: AI_Controller = AI_Controller.new()
 
 @export var tile_scene: PackedScene
 @export var columns := 10
@@ -145,6 +146,9 @@ func _ready():
 	add_child(game_manager)
 	add_child(bayesian)
 	bayesian.initialise(self, arbiter, unit_behavior)
+	add_child(ai_controller)
+	ai_controller.initialise(bayesian, arbiter, unit_behavior, rows, columns)
+
 	# Register every player unit slot so the Bayesian AI has priors from turn 1.
 	# (Player units don't exist yet in setup phase, so we register AI units instead
 	#  to seed the pool-accounting pass.)
@@ -180,6 +184,10 @@ func _process(_delta):
 	if ai_turn_pending and setup_locked and not game_manager.game_over:
 		ai_turn_pending = false
 		run_ai_turn()
+
+	# Poll whether the background AI thread has finished computing its move.
+	if _ai_decision_pending:
+		_poll_ai_thread()
 
 	var available_size = size
 	if available_size.x <= 0 or available_size.y <= 0:
@@ -498,19 +506,23 @@ func _tick_bribe_for_unit(uid: int, current_pos: Vector2i) -> void:
 
 	if remaining <= 0:
 		# Bribe expired — revert ownership back to the original team.
+		var original_owner: GameConstants.Team = bribed_units[uid]["original_owner"]
 		bribed_units.erase(uid)
 		if unit_map.has(current_pos):
 			var entry = unit_map[current_pos]
 			if entry.uid == uid:
-				entry["owner"] = GameConstants.Team.AI
+				entry["owner"] = original_owner
 				unit_map[current_pos] = entry
 				# Remove permanent reveal entries so the unit goes back into fog
 				# once player vision no longer covers its tile.
 				revealed_enemy_tiles.erase(current_pos)
 				revealed_rank_only.erase(current_pos)
-				# Restore the generic enemy sprite in case fog won't cover it immediately.
+				# Restore the correct sprite for the reverted owner.
 				tile_map[current_pos].set_unit(get_unit_texture_for_entry(entry, current_pos))
-				emit_log("Bribe expired: %s has returned to the enemy." % get_display_name(get_unit_name_from_type(entry.type)))
+				var side := "the enemy" if original_owner == GameConstants.Team.AI else "you"
+				emit_log("Bribe expired: %s has returned to %s." % [
+					get_display_name(get_unit_name_from_type(entry.type)), side
+				])
 		update_fog_of_war()
 	else:
 		emit_log("Bribed unit has %d move(s) remaining." % remaining)
@@ -698,11 +710,16 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 	tile_dst.set_unit(get_unit_texture_for_entry(entry, dst))
 
 	moved_uids.append(entry.uid)
-	emit_log("Moved %s from (%d, %d) to (%d, %d).%s" % [
-		get_display_name(get_unit_name_from_type(entry.type)),
-		src.x + 1, src.y + 1, dst.x + 1, dst.y + 1,
-		_bribe_moves_label(entry.uid)
-	])
+	# Only reveal the unit name in the log if it belongs to the player.
+	# AI unit names must stay hidden — just say "An enemy unit moved."
+	if get_entry_owner(entry) == GameConstants.Team.PLAYER:
+		emit_log("Moved %s from (%d, %d) to (%d, %d).%s" % [
+			get_display_name(get_unit_name_from_type(entry.type)),
+			src.x + 1, src.y + 1, dst.x + 1, dst.y + 1,
+			_bribe_moves_label(entry.uid)
+		])
+	else:
+		emit_log("An enemy unit moved.")
 
 	# ── BAYESIAN: update position & aggression/avoidance beliefs on plain moves ──
 	if get_entry_owner(entry) == GameConstants.Team.PLAYER:
@@ -778,8 +795,12 @@ func _register_all_player_units_with_bayesian() -> void:
 			bayesian.register_player_unit(entry.uid)
 			bayesian.update_from_position(entry.uid, pos, rows)
 
-## Executes a single AI turn: asks BayesianAI for the best move, applies it,
-## then calls end_turn() to hand control back to the player.
+# Thread used to run MCTS off the main thread so the timer and UI keep ticking.
+var _ai_thread: Thread = null
+var _ai_decision_pending: bool = false
+var _ai_decision: Dictionary = {}
+
+## Starts the AI turn on a background thread so _process() / timers are not blocked.
 func run_ai_turn() -> void:
 	if game_manager.game_over:
 		return
@@ -788,8 +809,34 @@ func run_ai_turn() -> void:
 
 	emit_log("AI is thinking…")
 
-	var decision = bayesian.choose_move(unit_map, rows, columns, game_manager.trapo_wallet)
+	# Snapshot the wallet now so the thread uses a consistent value.
+	var wallet_snapshot: int = game_manager.trapo_wallet
+	# Deep-clone the unit_map so the thread works on its own copy and does not
+	# race with any main-thread reads.
+	var map_snapshot: Dictionary = {}
+	for pos in unit_map.keys():
+		map_snapshot[pos] = unit_map[pos].duplicate()
 
+	_ai_thread = Thread.new()
+	_ai_thread.start(_ai_thread_func.bind(map_snapshot, wallet_snapshot))
+
+## Called every frame — checks if the AI thread has finished and applies the result.
+func _poll_ai_thread() -> void:
+	if _ai_thread == null or not _ai_decision_pending:
+		return
+	_ai_decision_pending = false
+	_ai_thread.wait_to_finish()
+	_ai_thread = null
+	_apply_ai_decision(_ai_decision)
+
+## Runs on the background thread — only pure computation, no scene-tree calls.
+func _ai_thread_func(map_snapshot: Dictionary, wallet_snapshot: int) -> void:
+	var decision = ai_controller.choose_move(map_snapshot, rows, columns, wallet_snapshot)
+	_ai_decision = decision
+	_ai_decision_pending = true
+
+## Applies the AI decision on the main thread (called from _poll_ai_thread).
+func _apply_ai_decision(decision: Dictionary) -> void:
 	match decision.action:
 		"move":
 			var src: Vector2i = decision.src
@@ -802,21 +849,29 @@ func run_ai_turn() -> void:
 				emit_log("AI move source no longer valid.")
 
 		"bribe":
-			# AI Trapo bribes a player unit
+			# AI Trapo bribes a player unit.
+			# The unit's owner stays PLAYER — it is temporarily controlled by AI
+			# (same pattern as when the player bribes an AI unit: owner flips to
+			# PLAYER).  We must NOT change owner to AI here, otherwise
+			# update_fog_of_war / get_unit_texture_for_entry would treat it as an
+			# AI unit and either hide it under fog or expose its real sprite.
 			var trapo_pos: Vector2i = decision.src
 			var target_pos: Vector2i = decision.dst
 			if unit_map.has(trapo_pos) and unit_map.has(target_pos):
 				var target_entry = unit_map[target_pos]
 				var target_rank = unit_type_to_rank(target_entry.type)
 				if game_manager.bribe_enemy(target_rank):
-					# Mirror the player bribe flow but in reverse ownership
-					target_entry["owner"] = GameConstants.Team.AI
-					unit_map[target_pos] = target_entry
+					# Keep owner as PLAYER — the unit is bribed but visually stays
+					# on the player's side (fog rules already apply correctly).
 					bribed_units[target_entry.uid] = {
 						"moves_remaining": BRIBE_MOVE_DURATION,
 						"original_owner": GameConstants.Team.PLAYER
 					}
-					emit_log("AI Trapo bribed your %s!" % UNIT_RANK_NAMES.get(target_entry.type, "unit"))
+					# Do NOT add to revealed_enemy_tiles — the AI has no business
+					# exposing the player unit's rank on screen.
+					emit_log("AI Trapo bribed your %s! It will serve the enemy for %d moves." % [
+						UNIT_RANK_NAMES.get(target_entry.type, "unit"), BRIBE_MOVE_DURATION
+					])
 					emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 					update_fog_of_war()
 				else:
@@ -991,46 +1046,43 @@ func get_fog_combat_message(
 	defender_entry: Dictionary
 ) -> String:
 
-	var attacker_name = get_display_name(
+	# Only reveal the name of a unit if it belongs to the PLAYER.
+	# AI unit names/ranks must never appear in the log — show "enemy unit" instead.
+	var player_attacker_name: String = get_display_name(
 		get_unit_name_from_type(attacker_entry.type)
-	)
+	) if attacker_is_player else "unit"
 
-	var defender_name = get_display_name(
+	var player_defender_name: String = get_display_name(
 		get_unit_name_from_type(defender_entry.type)
-	)
+	) if not attacker_is_player else "unit"
 
 	match combat_result:
 
 		Arbiter.CombatResult.ATTACKER_WINS:
-
 			if attacker_is_player:
-				return "Your %s captured an enemy unit." % attacker_name
+				return "Your %s captured an enemy unit." % player_attacker_name
 			else:
-				return "The enemy captured your %s." % defender_name
+				return "The enemy captured your %s." % player_defender_name
 
 		Arbiter.CombatResult.DEFENDER_WINS:
-
 			if attacker_is_player:
-				return "Your %s was captured by an enemy unit." % attacker_name
+				return "Your %s was captured by an enemy unit." % player_attacker_name
 			else:
-				return "Your %s captured an enemy unit." % defender_name
+				return "Your %s repelled the enemy attack." % player_defender_name
 
 		Arbiter.CombatResult.TIE:
-
 			if attacker_is_player:
-				return "Your %s was eliminated in combat." % attacker_name
+				return "Your %s was eliminated in combat with an enemy unit." % player_attacker_name
 			else:
-				return "Your %s was eliminated in combat." % defender_name
+				return "Your %s was eliminated in combat with an enemy unit." % player_defender_name
 
 		Arbiter.CombatResult.GAME_OVER_ATTACKER_WINS:
-
 			if attacker_is_player:
 				return "Your unit captured the enemy Flag!"
 			else:
 				return "The enemy captured your Flag!"
 
 		Arbiter.CombatResult.GAME_OVER_DEFENDER_WINS:
-
 			if attacker_is_player:
 				return "Your Flag was captured."
 			else:

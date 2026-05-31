@@ -144,8 +144,8 @@ func _on_ready_button_pressed():
 	if board.lock_setup_phase():
 		# Move the pause button to the Ready button's position so it replaces it visually
 		if ready_button != null and pause_button != null:
-			# copy rect_position (local to the shared parent) so pause sits exactly where Ready was
-			pause_button.rect_position = ready_button.rect_position
+			# copy position (local to the shared parent) so pause sits exactly where Ready was
+			pause_button.position = ready_button.position
 
 		ready_button.visible = false
 		unit_picker.disabled = true

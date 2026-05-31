@@ -214,8 +214,7 @@ func _on_tile_clicked(pos: Vector2i):
 	if bribe_mode:
 		bribe_mode = false
 		attempt_bribe(selected_tile, pos)
-		selected_tile = pos
-		emit_selected_tile_info(pos)
+		emit_selected_tile_info(selected_tile)
 		highlight_tiles()
 		return
 

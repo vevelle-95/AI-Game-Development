@@ -80,6 +80,9 @@ func can_corrupt(
 	if target_rank == GameConstants.Rank.FLAG:
 		return false
 
+	if target_rank == GameConstants.Rank.TRAPO:
+		return false
+
 	var distance = trapo_position.distance_to(target_position)
 
 	if distance > CORRUPT_RANGE:
@@ -116,7 +119,6 @@ func is_enemy_visible(
 	target_position: Vector2i,
 	observer_rank: GameConstants.Rank
 ) -> bool:
-
 	var vision_range = get_vision_range(observer_rank)
 
 	var dx = abs(target_position.x - observer_position.x)

@@ -4,12 +4,16 @@
 [ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="2_quitfont"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quitpanel"]
-bg_color = Color(0.6, 0.6, 0.6, 0.92156863)
+bg_color = Color(0.82606, 0.82606006, 0.8260601, 0.7254902)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quitbutton"]
 bg_color = Color(0.6392157, 0.5803922, 0.40392157, 1)
 expand_margin_top = 2.0
 expand_margin_bottom = 2.0
+content_margin_left = 24.0
+content_margin_right = 24.0
+content_margin_top = 12.0
+content_margin_bottom = 12.0
 
 [node name="Quit" type="Control" unique_id=1037794032]
 process_mode = 3
@@ -53,7 +57,7 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel/MarginContainer" unique_id=1369828182]
 layout_mode = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 20
 alignment = 1
 
 [node name="PromptLabel" type="Label" parent="CenterContainer/Panel/MarginContainer/VBoxContainer" unique_id=31180381]
@@ -71,6 +75,10 @@ alignment = 1
 
 [node name="ConfirmButton" type="Button" parent="CenterContainer/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=1080467240]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_quitfont")
 theme_override_font_sizes/font_size = 54
 theme_override_styles/normal = SubResource("StyleBoxFlat_quitbutton")
@@ -78,6 +86,10 @@ text = "Quit"
 
 [node name="CancelButton" type="Button" parent="CenterContainer/Panel/MarginContainer/VBoxContainer/ButtonRow" unique_id=1329805214]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_quitfont")
 theme_override_font_sizes/font_size = 54
 theme_override_styles/normal = SubResource("StyleBoxFlat_quitbutton")

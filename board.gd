@@ -48,6 +48,7 @@ var pickup_src_pos := Vector2i(-1, -1)
 var turn_number := 1
 var bribe_mode := false
 var has_moved_this_turn := false  # ONE MOVE PER TURN: tracks if the player has already moved a piece this turn
+var ai_turn_pending := false      # Set true when it becomes the AI's turn; processed in _process()
 
 
 # BRIBE SYSTEM: uid -> { "moves_remaining": int, "original_owner": GameConstants.Team }
@@ -142,12 +143,19 @@ func _ready():
 	create_board()
 	setup_ai_enemy()
 	add_child(game_manager)
+	add_child(bayesian)
+	bayesian.initialise(self, arbiter, unit_behavior)
+	# Register every player unit slot so the Bayesian AI has priors from turn 1.
+	# (Player units don't exist yet in setup phase, so we register AI units instead
+	#  to seed the pool-accounting pass.)
+	_register_all_player_units_with_bayesian()
 	update_fog_of_war()
 	emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
 	emit_signal("turn_changed", get_current_turn_name())
 	emit_log("Setup phase started. Place your units on the bottom %d rows." % DEPLOYMENT_ROWS)
-	add_child(bayesian)
-	bayesian.initialise(self, arbiter, unit_behavior)
+	# If the random start is the AI's turn, queue it up.
+	if game_manager.current_turn == GameManager.PlayTurn.AI:
+		ai_turn_pending = true
 
 func initialize_counts():
 	for unit_name in UNIT_ORDER:
@@ -167,6 +175,12 @@ func create_board():
 			tile_map[pos] = tile
 
 func _process(_delta):
+	# If the AI's turn was queued (after end_turn or random first-turn), execute it now.
+	# We defer to _process so the UI has a frame to update before the move fires.
+	if ai_turn_pending and setup_locked and not game_manager.game_over:
+		ai_turn_pending = false
+		run_ai_turn()
+
 	var available_size = size
 	if available_size.x <= 0 or available_size.y <= 0:
 		return
@@ -455,6 +469,9 @@ func attempt_bribe(source_pos: Vector2i, target_pos: Vector2i) -> bool:
 	# 4. Update the tile sprite so it shows the real unit texture (not Enemy.png).
 	tile_map[target_pos].set_unit(get_unit_texture(target_entry.type))
 
+	# ── BAYESIAN: bribe reveals the exact rank of this unit ──
+	bayesian.update_from_bribe_reveal(target_entry.uid, target_rank)
+
 	emit_log("Bribe successful! %s is now under your control for %d moves." % [
 		UNIT_RANK_NAMES.get(target_entry.type, "Unknown"),
 		BRIBE_MOVE_DURATION
@@ -571,6 +588,14 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				# If the defender was a bribed unit that got killed, clean up its bribe record.
 				if bribed_units.has(defender_entry.uid):
 					bribed_units.erase(defender_entry.uid)
+				# ── BAYESIAN: combat reveals relative rank of the losing unit ──
+				var _ai_is_attacker = get_entry_owner(entry) == GameConstants.Team.AI
+				if _ai_is_attacker:
+					# AI attacked and won → player defender rank was below AI attacker rank
+					bayesian.update_from_combat(attacker_rank, defender_entry.uid, combat_result, true)
+				else:
+					# Player attacked and won → player attacker rank was above AI defender rank
+					bayesian.update_from_combat(defender_rank, entry.uid, combat_result, false)
 				unit_map.erase(src)
 				_clear_tile_at(src)
 				unit_map.erase(dst)
@@ -599,6 +624,14 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 			# Attacker was killed — clean up its bribe record if it had one.
 			if bribed_units.has(entry.uid):
 				bribed_units.erase(entry.uid)
+			# ── BAYESIAN: defender won → attacker rank was below defender rank ──
+			var _ai_is_attacker_dw = get_entry_owner(entry) == GameConstants.Team.AI
+			if _ai_is_attacker_dw:
+				# AI attacked and lost → player defender rank was above AI attacker rank
+				bayesian.update_from_combat(attacker_rank, defender_entry.uid, combat_result, true)
+			else:
+				# Player attacked and lost → player attacker rank was below AI defender rank
+				bayesian.update_from_combat(defender_rank, entry.uid, combat_result, false)
 			unit_map.erase(src)
 			_clear_tile_at(src)
 			moved_uids.append(entry.uid)
@@ -628,6 +661,12 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 				bribed_units.erase(entry.uid)
 			if bribed_units.has(defender_entry.uid):
 				bribed_units.erase(defender_entry.uid)
+			# ── BAYESIAN: tie → both units share the same rank (pins exactly) ──
+			var _ai_is_attacker_tie = get_entry_owner(entry) == GameConstants.Team.AI
+			if _ai_is_attacker_tie:
+				bayesian.update_from_combat(attacker_rank, defender_entry.uid, combat_result, true)
+			else:
+				bayesian.update_from_combat(defender_rank, entry.uid, combat_result, false)
 			unit_map.erase(src)
 			_clear_tile_at(src)
 			unit_map.erase(dst)
@@ -664,6 +703,17 @@ func _move_unit(src: Vector2i, dst: Vector2i):
 		src.x + 1, src.y + 1, dst.x + 1, dst.y + 1,
 		_bribe_moves_label(entry.uid)
 	])
+
+	# ── BAYESIAN: update position & aggression/avoidance beliefs on plain moves ──
+	if get_entry_owner(entry) == GameConstants.Team.PLAYER:
+		bayesian.register_player_unit(entry.uid)
+		bayesian.update_from_position(entry.uid, dst, rows)
+		# Moving toward the AI's half (lower y) signals aggression.
+		if dst.y < src.y:
+			bayesian.update_from_aggression(entry.uid)
+		# Moving away from the AI's half signals avoidance.
+		elif dst.y > src.y:
+			bayesian.update_from_avoidance(entry.uid)
 
 	# Tick the bribe counter for this unit now that it has moved.
 	_tick_bribe_for_unit(entry.uid, dst)
@@ -709,6 +759,76 @@ func end_turn():
 	bribe_mode = false
 	emit_signal("turn_changed", get_current_turn_name())
 	emit_log("Turn ended. Movement reset.")
+	# Queue the AI turn; it will fire on the next _process frame.
+	if game_manager.current_turn == GameManager.PlayTurn.AI:
+		bayesian.tick_idle()
+		_register_all_player_units_with_bayesian()
+		ai_turn_pending = true
+
+# =============================================================================
+# AI TURN — driven by BayesianAI
+# =============================================================================
+
+## Registers every currently-visible player unit with the Bayesian AI so it
+## builds priors even before any combat evidence arrives.
+func _register_all_player_units_with_bayesian() -> void:
+	for pos in unit_map.keys():
+		var entry = unit_map[pos]
+		if get_entry_owner(entry) == GameConstants.Team.PLAYER:
+			bayesian.register_player_unit(entry.uid)
+			bayesian.update_from_position(entry.uid, pos, rows)
+
+## Executes a single AI turn: asks BayesianAI for the best move, applies it,
+## then calls end_turn() to hand control back to the player.
+func run_ai_turn() -> void:
+	if game_manager.game_over:
+		return
+	if game_manager.current_turn != GameManager.PlayTurn.AI:
+		return
+
+	emit_log("AI is thinking…")
+
+	var decision = bayesian.choose_move(unit_map, rows, columns, game_manager.trapo_wallet)
+
+	match decision.action:
+		"move":
+			var src: Vector2i = decision.src
+			var dst: Vector2i = decision.dst
+			if src == Vector2i(-1, -1) or dst == Vector2i(-1, -1):
+				emit_log("AI has no valid moves this turn.")
+			elif unit_map.has(src):
+				_move_unit(src, dst)
+			else:
+				emit_log("AI move source no longer valid.")
+
+		"bribe":
+			# AI Trapo bribes a player unit
+			var trapo_pos: Vector2i = decision.src
+			var target_pos: Vector2i = decision.dst
+			if unit_map.has(trapo_pos) and unit_map.has(target_pos):
+				var target_entry = unit_map[target_pos]
+				var target_rank = unit_type_to_rank(target_entry.type)
+				if game_manager.bribe_enemy(target_rank):
+					# Mirror the player bribe flow but in reverse ownership
+					target_entry["owner"] = GameConstants.Team.AI
+					unit_map[target_pos] = target_entry
+					bribed_units[target_entry.uid] = {
+						"moves_remaining": BRIBE_MOVE_DURATION,
+						"original_owner": GameConstants.Team.PLAYER
+					}
+					emit_log("AI Trapo bribed your %s!" % UNIT_RANK_NAMES.get(target_entry.type, "unit"))
+					emit_signal("bounty_changed", game_manager.trapo_wallet, 0, "")
+					update_fog_of_war()
+				else:
+					emit_log("AI Trapo wanted to bribe but lacked credits.")
+			else:
+				emit_log("AI bribe target no longer valid.")
+
+		_:
+			emit_log("AI skips this turn.")
+
+	# Hand control back to the player.
+	end_turn()
 
 func get_unit_name_from_type(unit: UnitType) -> String:
 	for unit_name in UNIT_ORDER:

@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cek38ymmxd4gb" path="res://assets/texture/Camouflage.jpg" id="1_nkug2"]
 [ext_resource type="FontFile" uid="uid://d1fhc8ijax8qv" path="res://assets/fonts/HeadCapitalBoldGrunge- .otf" id="1_x2hje"]
+[ext_resource type="Script" path="res://settings.gd" id="3_wr3u7"]
 
 [sub_resource type="Theme" id="Theme_jwo76"]
 
@@ -19,6 +20,7 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("3_wr3u7")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=164147]
 custom_minimum_size = Vector2(800, 800)

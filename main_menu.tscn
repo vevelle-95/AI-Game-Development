@@ -14,6 +14,7 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = 4.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
@@ -77,7 +78,7 @@ theme_override_font_sizes/font_size = 62
 theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
 text = "Quit"
 
-[node name="Label" type="Label" parent="." unique_id=992804574]
+[node name="Reimagined" type="Label" parent="." unique_id=992804574]
 layout_mode = 0
 offset_left = 770.0
 offset_top = 420.0
@@ -89,5 +90,21 @@ theme_override_fonts/font = ExtResource("2_7vrkn")
 theme_override_font_sizes/font_size = 68
 text = "reimagined"
 horizontal_alignment = 1
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=114909807]
+layout_mode = 0
+offset_top = 1020.0
+offset_right = 1920.0
+offset_bottom = 1074.0
+
+[node name="Copyright" type="Label" parent="CenterContainer" unique_id=167087342]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0.33660764, 0.3366076, 0.3366076, 1)
+theme_override_fonts/font = ExtResource("2_7vrkn")
+theme_override_font_sizes/font_size = 14
+text = "©salamars
+Bungque | Cendaña | Dar Juan | Lucas | Mapoy"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [connection signal="pressed" from="MainMenu#Center/MainMenu_Center#VBox/MainMenu_Center_VBox#PlayButton" to="." method="_on_main_menu_center_v_box_play_button_pressed"]
